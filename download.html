@@ -1,0 +1,23 @@
+<<
+
+
+
+
+
+
+
+# Start Code for .bb and .pak files /#
+ci_temp_path=getfilepath(ci_pushfile)
+# End Code for .bb and .pak files /#
+
+
+
+
+if count(ci_temp_path,ci_prefs[1,11])>0 then
+ temp=ci_fileinfo(reverse(chopright(reverse(ci_temp_path),'/')))
+else
+ temp=ci_fileinfo(ci_temp_path)
+/if
+if count(temp[5],'/x-')>0 then else temp[5]=replace(temp[5],'/','/x-') /if
+filepush(ci_temp_path,temp[5])
+>>

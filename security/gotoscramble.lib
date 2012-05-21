@@ -1,0 +1,4 @@
+expand file="/apps/imageservices/security/clearance.lib" /expand
+if right(page,5)='.html' then goto left(page,length(page)-4)+'scram' /if
+if right(page,4)='.htm' then goto left(page,length(page)-3)+'scram' /if
+goto "/system/login.html"

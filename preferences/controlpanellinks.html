@@ -1,0 +1,25 @@
+<html>
+ <head>
+  <title>Display System Folder Stuff</title>
+  <link rel="stylesheet" type="text/css" href="/apps/imageservices/filemanager/style.css" media="all">
+  <style>
+   .navlist            {padding-left: 0; margin-left: 0; border-bottom: 1px solid gray; width: 200px;}
+   .navlist li         {list-style: none; margin: 0; padding: 0.25em; border-top: 1px solid gray;}
+   .navlist li a       { text-decoration: none; }
+   .navlist li:hover   { background-color: #7b92bf;}
+  </style>
+ </head>
+ <body style="background-color: #dddddd; border-right: 1px solid black;">
+ <ul class="navlist">
+  <li><a href="configure.html" target="panel" name="ci_panelvalue" value="1">Configure<br><font color="#555555" size="-2">Image Services Preferences</font></a></li>
+  <li><a href="upgrade.html" target="panel">Upgrade<br><font color="#555555" size="-2">Upgrade Image Services</font></a></li>
+  <li><a href="configure.html" name="ci_panelvalue" value="2" target="panel">Test<br><font color="#555555" size="-2">Test Image Services</font></a></li>
+  <li><a href="telnet.html" target="panel">Telnet<br><font color="#555555" size="-2">Use Image Services telnet</font></a></li>
+ </ul>
+<<
+if banner='/system/panel/sysfolder.html' then
+ display 'Image Services requires ImageMagick to operate. Your system folder needs to be the path to the location of the ImageMagick executables.' /display
+/if
+>>
+ </body>
+</html>

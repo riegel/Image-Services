@@ -1,0 +1,40 @@
+<<
+expand file="/system/clearimage/DLL.lib" /expand
+temp=ci_extract(viewfile)
+>>
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8">
+  <title></title>
+  <script>
+temp=top.frames['path'].document.getElementById('execute000');
+set=false;
+if(temp.innerHTML==''){
+   temp.innerHTML='<span class="close"><a href="javascript:closeIt(document.getElementById(\'execute000\'));"><img src="/apps/imageservices/filemanager/images/close.png" border="0" width="12" height="12"></a></span><a href="<<viewfile>>" target="details" onclick="select(this.parentNode);"><<temp[2,1]+temp[4,1]>></a>';
+   set=true;
+   top.frames['path'].select(temp);
+}
+
+temp=top.frames['path'].document.getElementById('execute001');
+if(temp.innerHTML=='' && set==false){
+   temp.innerHTML='<span class="close"><a href="javascript:closeIt(document.getElementById(\'execute001\'));"><img src="/apps/imageservices/filemanager/images/close.png" border="0" width="12" height="12"></a></span><a href="<<viewfile>>" target="details" onclick="select(this.parentNode);"><<temp[2,1]+temp[4,1]>></a>';
+   set=true;
+   top.frames['path'].select(temp);
+}
+
+temp=top.frames['path'].document.getElementById('execute002');
+if(temp.innerHTML=='' && set==false){
+   temp.innerHTML='<span class="close"><a href="javascript:closeIt(document.getElementById(\'execute002\'));"><img src="/apps/imageservices/filemanager/images/close.png" border="0" width="12" height="12"></a></span><a href="<<viewfile>>" target="details" onclick="select(this.parentNode);"><<temp[2,1]+temp[4,1]>></a>';
+   set=true;
+   top.frames['path'].select(temp);
+}
+
+document.location='<<viewfile>>';
+
+  </script>
+ </head>
+ <body>
+  View...
+ </body>
+</html>

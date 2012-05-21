@@ -1,0 +1,263 @@
+<<
+  # BEGIN Load Alternate if found /#
+    temp=replace(page,'/imageservices/','/imageservices_alternate/')
+    if domainname<>'clearimageonline.com' and isfile(temp) then goto temp /if
+  # END   Load Alternate if found /#
+
+
+if count(getenv('HTTP_USER_AGENT'),'iPad')>0 or count(getenv('HTTP_USER_AGENT'),'iPod')>0 or count(getenv('HTTP_USER_AGENT'),'iPhone')>0 then iDevice='TRUE' ci_prefs[1,27]='1' /if
+
+expand file="/system/clearimage/DLL.lib" /expand
+expand file="/system/clearimage/libraries/upload.lib" /expand
+temp=init_upload()
+if ci_executepage<>'ERROR' then goto ci_executepage /if
+
+# This only requires one variable to be set upon initial calling
+  ci_imagepath="/path1/file.jpg|/path2/file2.jpg,/path/to/execute/file.html,MYIDVAR"
+  It is a comma separated list
+  FILES,EXECUTE,EXECUTEID
+  FILES is a pipe separated list of files to upload
+  EXECUTE is the path to an HTML file to execute after upload is done
+  EXECUTEID is a value set to be used (if needed) by the execute file
+
+  Ok the following variables are set for the page
+  ci_imagepath
+  ci_uploadhtml
+  ----------------------------------------------------
+  ci_uploadhtml[1]=choose form element
+  ci_uploadhtml[2]=download anchor
+  ci_uploadhtml[3]=delete anchor
+  ci_uploadhtml[4]=Error/Status Message
+  ci_uploadhtml[5]=Short Image Name
+  ci_uploadhtml[6]=formatted properties
+  ci_uploadhtmlr[7]=Width
+  ci_uploadhtml[8]=Height
+  ci_uploadhtml[9]=File Type
+  ci_uploadhtml[10]=Size
+  ci_uploadhtml[11]=File Name
+  ci_uploadhtml[12]=icon img
+  ci_uploadhtml[13]=form start
+  ci_uploadhtml[14]=form end
+  ci_uploadhtml[15]=delete icon/text
+  ci_uploadhtml[16]=Upload Button
+  ci_uploadhtml[17]='TRUE' or 'ERROR' if the page is being reached after an upload then TRUE.
+  ci_uploadhtml[18]=MODIFIED DATE
+/#
+>>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+ <title>Upload - <<count(ci_imagepath,'|')+1>> file(s)</title>
+ <meta http-equiv="pragma" content="no-cache">
+ <meta http-equiv="cache-control" content="no-cache">
+
+<<
+if ci_prefs[1,27]=1 then
+ display
+  ^   <script language="javascript" type="text/javascript" src="/apps/imageservices/jscripts/upload.js?'+ci_version()+'"></script>
+ <script>
+var Picup = {
+    
+    customURLScheme : 'fileupload://',     
+    windowname : 'fileupload',
+    activeFileInput : null,
+    currentHash : '', 
+    hashObserverId : null,
+
+	// Override this as a function to handle hash changes
+    callbackHandler : null,
+
+    openFileWithId : function(picID){
+        window.open(Picup.urlForOptions('view', {'picID' : picID}), Picup.windowname);
+        return false;
+    },
+    
+    convertFileInput : function(inputOrInputId, options){
+        var input = inputOrInputId;
+        if(typeof(inputOrInputId) == 'string'){
+           input = document.getElementById(inputOrInputId);
+        }
+    	input.type = 'button';
+    	input.value = "Choose Photo...";
+    	input.picupOptions = options;
+    	input.onclick = function(){     	    
+    	    Picup.activeFileInput = this;
+    		window.open(Picup.urlForOptions('new', this.picupOptions), Picup.windowname);
+    		// start the observer
+    		if(Picup.callbackHandler){
+	    		Picup.currentHash = window.location.hash;
+	    		Picup.hashObserverId = setInterval('Picup.checkHash()', 500);
+    		}			
+    	};
+    	input.disabled = false;
+    	
+    	return false;
+    },
+    
+    checkHash : function(){
+    	if(window.location.hash != Picup.currentHash){
+    		// The hash has changed
+    		clearInterval(Picup.hashObserverId);
+    		Picup.currentHash = window.location.hash;
+    		
+	    	var hash = window.location.hash.replace(/^+'^'+^\#/, '');
+    		var paramKVs = hash.split('&');
+			var paramHash = {};
+			var paramOutput = [];
+			for(var p=0;p<paramKVs.length;p++){
+				var kvp = paramKVs[p];
+				// we only want to split on the first =, since data:URLs can have = in them
+				var kv = kvp.replace('=', '&').split('&');
+				paramHash[kv[0]] = kv[1];
+			}
+			Picup.callbackHandler(paramHash);
+    	}
+    },
+    
+    urlForOptions : function(action, options){
+	    var url = Picup.customURLScheme+action+'?';
+    	var params = [];
+    	for(var param in options){
+    		params.push(param+'='+options[param]);
+    	}
+    	var uploadURL = url + params.join('&');
+    	return uploadURL;
+    },
+    
+};
+
+
+Picup.callbackHandler=function(){
+ // alert('Your picture has loaded. Refreshing page...');
+ document.body.innerHTML='';
+ window.location.reload();
+}
+
+
+function checkHash(){
+ Picup.hashObserverId = setInterval('Picup.checkHash()', 500);
+}
+
+window.onload=function(){
+ Picup.checkHash()
+}
+  </script>
+
+^
+ /display
+/if
+>>
+ <style>
+ <!--
+ BODY                 {background: #888888;}
+ BODY,TD              {font-size: 9pt; font-family: Verdana; font-weight: normal; color: #000000}
+ A                    {color: #2B4F9E; text-decoration: none}
+ A:Hover              {color: #2B4Fff; text-decoration: underline}
+ #formx_progress      {width: 0px; height: 8px; background-color: #0065e1; overflow: hidden;}
+ #formx_progresstext  {width: 478px; height: 15px; overflow: hidden; border-top: 1px solid #aaaaaa;}
+ -->
+ </style>
+ </head>
+ <body>
+  <center>
+  <table>
+   <tr>
+    <td align="left">
+  <<ci_uploadhtml[13,1]>>
+  <<ci_uploadhtml[16,1]>>
+  <<
+   a=1 b=rows(ci_uploadhtml)
+   for name=ci_uploadhtml rowname=r do
+   display '
+    <table cellpadding="0" cellspacing="0" border="0">
+     <tr>
+      <td>' /display
+   if b=1 then
+    display '
+       <div style="width: 128px; height: 160px; background: #ffffff; padding: 8px; border: 2px solid #888888; border-right: none; text-align: center;">' /display
+   elif a=1 then
+    display '
+       <div style="width: 128px; height: 160px; background: #ffffff; padding: 8px; border: 2px solid #888888; border-bottom: 2px solid #cccccc; border-right: none; text-align: center;">' /display
+   elif a=b then
+    display '
+       <div style="width: 128px; height: 160px; background: #ffffff; padding: 8px; border: 2px solid #888888; border-top: none; border-right: none; text-align: center;">' /display
+   else
+    display '
+       <div style="width: 128px; height: 160px; background: #ffffff; padding: 8px; border: 2px solid #888888; border-top: none; border-bottom: 2px solid #cccccc; border-right: none; text-align: center;">' /display
+   /if
+   display '
+        <table width=100% height=100% cellpadding=0 cellspacing=0 border=0>
+         <tr>
+          <td align=center valign=center><a '+r[2]+'>'+r[12]+'</a></td>
+         </tr>
+        </table>
+       </div>
+      </td>
+      <td>' /display
+   if b=1 then
+    display '
+       <div style="width: 320px; height: 160px; background: #e4e4e4; padding: 8px; border: 2px solid #888888; border-left: none; text-align: center;">' /display
+   elif a=1 then
+    display '
+       <div style="width: 320px; height: 160px; background: #e4e4e4; padding: 8px; border: 2px solid #888888; border-bottom: 2px solid #cccccc; border-left: none; text-align: center;">' /display
+   elif a=b then
+    display '
+       <div style="width: 320px; height: 160px; background: #e4e4e4; padding: 8px; border: 2px solid #888888; border-left: none; border-top: none; text-align: center;">' /display
+   else
+    display '
+       <div style="width: 320px; height: 160px; background: #e4e4e4; padding: 8px; border: 2px solid #888888; border-left: none; border-top: none; border-bottom: 2px solid #cccccc; text-align: center;">' /display
+   /if
+
+
+
+   display ^
+        <table width=100% height=100% cellpadding=0 cellspacing=0 border=0>
+         <tr>
+          <td align="left" valign=center>
+           <div class="choosebuttons">
+            ^+showwith('',r[4],'<br>') /display
+
+
+
+            if iDevice='TRUE' then
+             altsource=^
+              <div class="picup" style="overflow: auto;">
+               <script>
+                document.write('<a href="fileupload://new?callbackURL=^+postprep(getlink(page,'ci_imagepath',ci_imagepath))+^&posturl='+encodeURIComponent(document.getElementById('formx').action)+'&postimageparam=file^+a+^^+usernum+^&postvalues=^+postprep('ci_uploaded=TRUE&ci_imagepath='+postprep(r[21]))+^" onclick="checkHash()" class="button tiny" style="font-size: 8px; padding-left:10px; padding-right:10px;">Choose Photo</a> <a href="http://itunes.apple.com/us/app/picup/id354101378?mt=8" target="new">(not working?)</a>');
+               </script>
+              </div>^
+            else
+             altsource=r[1]
+            /if
+
+
+
+
+
+
+   display altsource+^
+            <textarea name="^+r[20]+^" style="width: 304px; height: 45px;" onfocus="if(this.value=='COMMENTS:') {this.value='';}" onblur="if(this.value=='') {this.value='COMMENTS:';}"></textarea>
+            <div style="font-size: 7pt;">
+             ^+showwith('',replaceall(r[6],'//','/'),'')+ showwith('<br>',r[18],^<br>^)+ci_linkto(r[3],r[15])+^
+            </div>
+           </div>
+          </td>
+         </tr>
+        </table>
+       </div>
+      </td>
+     </tr>
+    </table>
+   ^ /display
+    a=a+1
+   /for
+  >>
+  <<ci_uploadhtml[14,1]>>
+    </td>
+   </tr>
+  </table>
+ </center>
+ </body>
+ <<ci_imagepath="ERROR" ci_upload="ERROR">>
+</html>

@@ -1,0 +1,52 @@
+<<
+#
+ci_imagepath=destination+"/{{USECLIENTNAME}}"
+ci_imagepath=replaceall(ci_imagepath,"//","/")
+goto ci_prefs[1,9]
+/#
+if head="ERROR" then head="" /if
+if fm_style="ERROR" then fm_style="" /if
+fm_new='ERROR'
+>>
+<head>
+<<fm_style>>
+</head>
+<body bgcolor="#cccccc">
+<table width="100%" height="100%" border="0">
+ <tr>
+  <td align="center" valign="center">
+   <form action="doit" accept-charset="utf-8">
+How Many files would you like to upload?<br>
+<select name="ci_number">
+<<
+#
+ ci_temp=floor(250/(length(destination)+19))+10
+/#
+ for name=ci_temp value=1 to 20 do
+  if ci_temp=1 then
+   display ' <option value="'+ci_temp+'">1 File</option>' /display
+  else
+   display ' <option value="'+ci_temp+'">'+ci_temp+' Files</option>' /display
+  /if
+ /for
+>>
+</select>
+<input type="Submit" name="ci_button" value="Go">
+   </form>
+  </td>
+ </tr>
+</table>
+</body>
+</html>
+<<overlay doit
+if isinteger(ci_number) then
+ ci_imagepath=""
+ for name=ci_temp value=1 to ci_number do
+  ci_imagepath=ci_imagepath+destination+"/{{USECLIENTNAME}}|"
+ /for
+ if right(ci_imagepath,1)="|" then ci_imagepath=left(ci_imagepath,length(ci_imagepath)-1) /if
+ ci_imagepath=replaceall(ci_imagepath,"//","/")
+ goto ci_prefs[1,9]
+/if
+goto page
+>>

@@ -1,0 +1,63 @@
+<<
+expand file="/system/clearimage/DLL.lib" /expand
+expand file="configure.lib" /expand
+preloadedcontent=ci_cpcontent(ci_panelvalue)
+>>
+<html>
+ <head>
+  <title>Image Services Configuration Page</title>
+  <style>
+   .medium             {font-size: 18px;}
+   TEXTAREA       {font-family: Lucida Console,Courier,Times}
+   BODY           {font-size: 10pt; font-family: Verdana; font-weight: normal; color: #888888;}
+   TD             {font-size: 10pt; font-family: Verdana; font-weight: normal; color: #888888;}
+   A              {color: #5791CD; text-decoration: none}
+   A:Hover        {color: #EEC767; text-decoration: none}
+   A.header       {color: white; text-decoration: none}
+   A.header:Hover {color: #FF8400; text-decoration: underline}
+   PRE            {font-family: Courier;} 
+  </style>
+ </head>
+ <body>
+  <table border=0 cellpadding=3 cellspacing=0 width=600>
+   <tr>
+    <td colspan=2 class=medium><b><<ci_cpbar(ci_panelvalue)>></b></td>
+   </tr>
+   <tr>
+    <td>&nbsp;</td>
+    <td align=right><a href="<<page>>">[Reload]</a></td>
+   </tr>
+   <tr>
+    <td colspan="2"><<preloadedcontent>></td>
+   </tr>
+  </table>
+ </body>
+</html>
+<<overlay setupuploadprogress
+ shell=''
+ cmd1=cmd
+ cmdhist=cmdhist+lf+cmd
+ # Move upload.cgi /#
+ cmd='cp [private]/apps/imageservices/upload.cgi [script]'
+ cmd2=aliascommand(cmd)
+ shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+ # Set Permissions for script /#
+ cmd='chmod 755 [script]/upload.cgi'
+ cmd2=aliascommand(cmd)
+ shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+ # Set Permissions for upload directory /#
+ cmd='chmod 775 [public]/upload'
+ cmd2=aliascommand(cmd)
+ shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+ # List the directory when done /#
+ cmd='ls -al [script]/upload.cgi'
+ cmd2=aliascommand(cmd)
+ shell=shell+lf+'Listing below verify permissions...'+lf+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+ cmd=cmd1
+ if count(shell,'rwx')>0 then
+  message='<hr>Progress Bar Installation/Repair appears to have been successful. <a href="configure.html" name="ci_panelvalue" value="2">Test</a> to verify functionality.'
+ else
+  message='<hr>Progress Bar Installation/Repair failure. <a href="configure.html" name="ci_panelvalue" value="2">Test</a> to verify.'
+ /if
+ goto page
+>>

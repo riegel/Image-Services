@@ -1,0 +1,315 @@
+<<
+  # BEGIN Load Alternate if found /#
+    temp=replace(page,'/imageservices/','/imageservices_alternate/')
+    if domainname<>'clearimageonline.com' and isfile(temp) then goto temp /if
+  # END   Load Alternate if found /#
+
+
+
+expand file="/system/clearimage/DLL.lib" /expand
+
+
+
+
+
+function head() do
+ return '
+  <head>
+   <title>Editing '+reverse(replaceall(chopright(reverse(path),"/"),"/",""))+'</title>
+   <link rel="stylesheet" type="text/css" href="/apps/imageservices/filemanager/style.css" media="all">
+   <style>
+    <!--
+       BODY {font-size: 8pt; font-family: Verdana; font-weight: normal; color: #000000}
+         TD {font-size: 8pt; font-family: Verdana; font-weight: normal; color: #000000}
+          A {color: #2B4F9E; text-decoration: none}
+    A:Hover {color: #2B4Fff; text-decoration: underline} 
+    '+tmap[2]+'
+    -->
+   </style>
+  </head>
+' /return
+/function
+
+
+
+
+
+function editmap() locals temp,x,y do
+ y=rows(map)
+ if map[1,y]="" and map[2,y]="" and map[3,y]="" and map[4,y]="" and map[5,y]="" and map[6,y]="" and map[7,y]="" then
+ else
+  if map[1,1]<>"ERROR" then y=y+1 /if
+ /if
+ temp='
+  <table>
+   <tr>
+    <td colspan=2></td>
+    <td align=center>LINK i.e. href="index.html"</td>
+    <td align=center>Alternate Text</td>
+    <td align=center>TL</td>'
+ if showvalues="TRUE" then temp=temp+'
+    <td align=center>OVER</td>
+    <td align=center>DOWN</td>'
+ /if
+ temp=temp+'
+    <td align=center>BR</td>'
+ if showvalues="TRUE" then temp=temp+'
+    <td align=center>OVER</td>
+    <td align=center>DOWN</td>'
+ /if
+ if var<>0 then
+  temp=temp+'
+    <td align=center>VARIABLE</td>
+    <td align=center>VALUE</td>'
+ /if
+ temp=temp+'
+   </tr>'
+ for name=x value=1 to y do
+  temp=temp+'
+   <tr>
+    <td align="right">' if x<>y then temp=temp+'<a href='+page+' name=deleterow value='+x+'><img src=/apps/imageservices/trash.gif width=12 height=12 border=0></a>' else temp=temp+'<input type=submit name=mybutton value="Submit">' /if
+  temp=temp+'
+    </td>
+    <td>'+x+'</td>
+    <td><input type=text size=30 name=map[1,'+x+']>
+    <td><input type=text size=15 name=map[2,'+x+']></td>
+    <td><input type=radio name=change value='+(x*2)+'></td>'
+  if showvalues="TRUE" then temp=temp+'
+    <td><input type=text size=4 name=map[4,'+x+']></td>
+    <td><input type=text size=4 name=map[5,'+x+']></td>' /if
+  temp=temp+'
+    <td><input type=radio name=change value='+(x*2-1)+'></td>'
+  if showvalues="TRUE" then temp=temp+'
+    <td><input type=text size=4 name=map[6,'+x+']></td>
+    <td><input type=text size=4 name=map[7,'+x+']></td>'
+  /if
+  if var<>0 then
+   temp=temp+'
+    <td><input type=text size=8 name=map[8,'+x+']></td>
+    <td><input type=text size=6 name=map[9,'+x+']></td>' /if
+  temp=temp+lf+'</tr>'+lf
+ /for
+ temp=temp+'</table>'
+ return temp /return
+/function
+
+
+
+
+
+
+function actionbar(var) locals temp,y do
+ # if var=0 then using old imagemap if 1 then using new /#
+ y=ci_extract(path)
+ temp='
+   <table border="0" cellspacing="0" cellpadding="0" class="ice">
+    <tr align="center" valign="middle">
+     <td valign=top><img src="/apps/imageservices/filemanager/images/icemid.gif" border=0 width=2 height=25></td>
+     <td valign=center><nobr><a href="'+exitpage+'"><img src=/apps/imageservices/filemanager/images/run.gif border=0 width=12 height=12 align=center>&nbsp;Return</a></nobr></td>
+     <td valign=center><nobr><a href='+page+' name=showvalues value="'+not(showvalues)+'"><img src=/apps/imageservices/images/table-small.gif border=0 width=12 height=12 align=center>&nbsp;' if showvalues then temp=temp+'Less&nbsp;Detail' else temp=temp+'More&nbsp;Detail' /if temp=temp+'</a></nobr></td>
+     <td valign=center><nobr><a href='+page+' name=showpreview value="'+not(showpreview)+'"><img src=/apps/imageservices/filemanager/images/eye.gif border=0 width=12 height=12 align=center>&nbsp;' if showpreview then temp=temp+'Hide&nbsp;Preview' else temp=temp+'Show&nbsp;Preview' /if temp=temp+'</a></nobr></td>
+     <td valign=center><nobr><a href='+page+' name=ow value=OVERWRITE><img src=/apps/imageservices/filemanager/images/reload.gif border=0 width=12 height=12 align=center>&nbsp;Redraw</a></nobr></td>'
+  if var=0 then
+   temp=temp+'
+     <td valign=center><nobr>'+ci_popup(path,'<img src=/apps/imageservices/filemanager/images/upload.gif border=0 width=12 height=12 align=center>&nbsp;Upload&nbsp;Image')+'</nobr></td>'
+  else
+   temp=temp+'
+     <td valign=center><nobr><a href="compositemap.html" name="me_page" value="1" onClick="window.'+"open('"+ci_link3('compositemap.html','me_page',1)+"', 'buildcomposite', 'width=640,height=480,status=yes,scrollbars=yes,resize=yes,left=200'); return false"+'"><img src=/apps/imageservices/filemanager/images/upload.gif border=0 width=12 height=12 align=center>&nbsp;Edit&nbsp;Graphic</a></nobr></td>'
+  /if
+ temp=temp+'
+     <td valign=top><img src="/apps/imageservices/filemanager/images/icemid.gif" border=0 width=2 height=25></td>
+    </tr>
+   </table>'
+ return temp /return
+/function
+
+
+
+
+
+function generateimages(path) locals im,imHOVER,imACTIVE,imALL,ex,out,temp do
+ im=path
+ ex=ci_extract(path)
+ imHOVER=ex[1]+ex[2]+"HOVER"+ex[4]
+ imACTIVE=ex[1]+ex[2]+"ACTIVE"+ex[4]
+ imALL=ex[1]+ex[2]+"ALL"+ex[4]
+ if isfile(im) then
+  if isfile(imHOVER) then else temp=ci_cpfile(im,imHOVER) /if
+  if isfile(imACTIVE) then else temp=ci_cpfile(im,imACTIVE) /if
+  if ow="MAKESTACKED" or NOT(isfile(imALL)) then
+   ow="" 
+   temp=ci_rmimage(imALL)
+   out=''
+   if ci_imageformat="JPEG" then out=" -quality "+ci_jpeg+" -flatten JPEG:" /if
+   if ci_imageformat="GIF" then out=" -colors "+ci_gif+" -flatten GIF:" /if
+   if ci_imageformat="PNG" then out=" PNG:" /if
+   if ci_mapstyle=11 then
+    temp=syscall('generateimages:000',ci_prefs[1,7]+' '+ci_getpath(im)+' -append'+out+ci_getpath(imALL)+' 2>&1')
+   elif ci_mapstyle=21 then
+    temp=syscall('generateimages:001',ci_prefs[1,7]+' '+ci_getpath(im)+' '+ci_getpath(imHOVER)+' -append'+out+ci_getpath(imALL)+' 2>&1')
+   elif ci_mapstyle=31 then
+    temp=syscall('generateimages:002',ci_prefs[1,7]+' '+ci_getpath(im)+' '+ci_getpath(imHOVER)+' '+ci_getpath(imACTIVE)+' -append'+out+ci_getpath(imALL)+' 2>&1')
+   else
+   /if
+  /if
+  return "TRUE" /return
+ else
+  return "ERROR" /return
+ /if
+/function
+
+
+
+
+
+function putmap() locals x do
+ x=map[1,1]
+ map[1,1]=ci_imageformat+"|"+ci_mapstyle+"|"+ci_jpeg+"|"+ci_gif+"|"+x
+ copy map to file=path+".csv" ts="," /copy
+ temp=sysfixprivate(path+".csv")
+ map[1,1]=x
+ return '' /return
+/function
+
+
+
+
+
+function getmap() locals map do
+ copy file=path+".csv" ts="," to map /copy 
+ if count(map[1,1],"|")=0 then
+  ci_imageformat="JPEG"
+  ci_mapstyle="21"
+  ci_jpeg=80
+  ci_gif=32
+ else
+  ci_temp=listtorow(map[1,1],"|")
+  ci_imageformat=ci_temp[1]
+  ci_mapstyle=ci_temp[2]
+  ci_jpeg=ci_temp[3]
+  ci_gif=ci_temp[4]
+  map[1,1]=ci_temp[5]
+ /if
+return map /return
+/function
+
+
+
+
+
+function drawmap() locals img do
+ if isinteger(deleterow) then map=delrow(map,deleterow) deleterow="ERROR" ow="OVERWRITE" /if
+ x=1
+ while x<rows(map) do
+  if map[1,x]="" and map[2,x]="" and map[3,x]="" and map[4,x]="" and map[5,x]="" and map[6,x]="" and map[7,x]="" then
+   map=delrow(map,x)
+  else
+   x=x+1
+  /if
+ /while
+ if ow<>"OVERWRITE" then ow="" /if
+ if showvalues="ERROR" then showvalues="FALSE" /if
+ if showpreview="ERROR" then showpreview="FALSE" /if
+ if dwidth="ERROR" then dwidth=10 /if
+ if dheight="ERROR" then dheight=10 /if
+ if change="ERROR" then change=1 /if
+ if mybutton="Submit" then ow="OVERWRITE" /if
+ if (header.x<>"" and header.y<>"ERROR") then
+  r=round(change/2)
+  c=round(round(change/2)-(change/2))*2
+  map[4+c,r]=header.x
+  map[5+c,r]=header.y
+  if c=2 then
+   if map[4,r]="" or map[5,r]="" or (map[6,r]-map[4,r])<=0 or (map[7,r]-map[5,r])<=0 then
+    map[4,r]=map[6,r]-dwidth
+    map[5,r]=map[7,r]-dheight
+   else
+    dwidth=map[6,r]-map[4,r]
+    dheight=map[7,r]-map[5,r]
+   /if
+  elif c=0 then
+   map[6,r]=map[4,r]+dwidth
+   map[7,r]=map[5,r]+dheight
+  /if
+  ow="OVERWRITE"
+ /if
+ if change="ERROR" then change=2 else if c=0 then change=change+2 else change=change+1 /if /if
+ if round(change/2)>rows(map)+1 then change=change-2 /if
+ ow=ow+"-pointsize 9 "
+ y=1
+ for name=map rowname=x do
+  if isinteger(x[4]+x[5]+x[6]+x[7]) and x[4]<>"" and x[5]<>"" and x[6]<>"" and x[7]<>"" then
+   ow=ow+'-fill none -stroke blue -draw "rectangle '+x[4]+','+x[5]+' '+x[6]+','+x[7]+'"'+
+         ' -fill blue -draw "rectangle '+x[4]+','+x[5]+' '+(x[4]*1+(5*length(y)+2))+','+(x[5]*1+8)+'" -stroke white -fill white -draw "text '+(x[4]*1+1)+','+(x[5]*1+7)+' '+"'"+y+"'"+'" '
+   y=y+1
+  /if
+ /for
+ if right(ow,2)='""' then if left(ow,9)="OVERWRITE" then ow="OVERWRITE" else ow="" /if /if
+ temp=ci_img2(path,"","","TRUE",100,"convert",ow)
+ img=ci_tagresults
+ img='src="'+img[10]+'" width="'+img[1]+'" height="'+img[2]+'" border="0"'
+ return img /return
+/function
+
+
+
+
+
+
+
+
+
+
+# if ci_programparams comes in set then use its values (they will be set by a link)
+  [1] - /path/to/file
+  [2] - map style 0-image map 1-CSS three image image map 2-CSS one image image map
+  [3] - Calling program
+  [4] - ??varPage??
+  [5] - var This is the image map version number (Either 0 - Original, or 1 - New)
+/#
+if ci_programparams<>"ERROR" then
+ ci_temp=listtorow(ci_programparams,"|")
+ path=ci_temp[1]
+ ci_mapstyle=ci_temp[2]
+ bgpath=ci_temp[1]+"bg"
+ exitpage=ci_temp[3]
+ varPage=ci_temp[4]
+ var=ci_temp[5]
+ map=getmap()
+ if var=0 then ci_mapstyle=0 /if
+ ci_temp=getmap()
+ ci_temp="ERROR"
+ ci_message=ci_programparams
+ ci_programparams="ERROR"
+/if
+if map="ERROR" then ow="OVERWRITE" map=getmap() /if
+temp=generateimages(path)
+if showpreview then
+ if ci_mapstyle=0 then
+  temp=ci_imgmap(path,"FALSE") tmap[1]="" tmap[2]="" tmap[3]=temp tmap[4]=""
+ else
+  tmap=ci_imgmap2(path,"DUMMY")
+ /if
+else
+  tmap[1]="" tmap[2]='' tmap[3]='' tmap[4]=''
+/if
+>>
+<html>
+ <<head()>>
+ <BODY bgcolor=#eeeeee>
+  <center>
+  <form type="submit" action="<<page>>" accept-charset="utf-8">
+   <input type="image" name="header" style="cursor: crosshair" <<drawmap()>>>
+   <br>&nbsp;<br>
+   <<editmap()>>
+   <br>&nbsp;<br>
+Use VARIABLE and VALUE to cause the link to look active. Link can be active by more than one value for example if the Variable equals 1,2,3 then to make th link active add 1|2|3
+   <br>&nbsp;<br>
+   <<actionbar(var)>>
+  </form>
+ <hr>
+ <<tmap[3]>>
+ </center>
+ </body>
+ <<savemap=map header.x="" header.y="" mybutton="" temp=putmap()>>
+</html>

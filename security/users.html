@@ -1,0 +1,85 @@
+<<expand file="/apps/imageservices/security/clearance.lib" /expand>>
+<<
+clear_users=dbsearch(ci_approot+'/security/clear_users',"clear_user~''",1,1000)
+copy file=ci_approot+'/security/clear_users.conf' ts=',' to clear_users.conf /copy
+x='ERROR' x[1]='RECORD'
+
+
+
+for name=clear_users.conf rownum=y do
+ x[y+1]=clear_users.conf[1,y]
+ temp=indirectionset(clear_users.conf[1,y],indirection(clear_users.conf[1,y]+'_SHADOW'))
+/for
+
+c=cols(clear_users)+1
+for name=clear_users rownum=x do
+ temp=split(clear_users[3,x],' ')
+ clear_users[c,x]=temp[cols(temp),rows(temp)]
+ clear_users[c+1,x]=temp[1,1]
+/for
+clear_users=sortcol(clear_users,c+1)
+clear_users=sortcol(clear_users,c)
+
+>>
+<html>
+<head>
+ <title>Users</title>
+ <meta http-equiv="pragma" content="no-cache">
+ <meta http-equiv="cache-control" content="no-cache">
+ <style>
+ <!--
+ BODY    {background: #888888;}
+ BODY,TD {font-size: 9pt; font-family: Verdana; font-weight: normal; color: #000000}
+ .tiny   {font-size: 8pt; color: #aaaaaa;}
+ A       {color: #2B4F9E; text-decoration: none}
+ A:Hover {color: #2B4Fff; text-decoration: underline}
+ -->
+ </style>
+ </head>
+<body>
+  <center>
+  <table><tr><td>
+<h2>Security Clearance Manager - Users</h2>
+<h4>Users | <a href="<<ci_approot+'/security/groups.html'>>">Groups</a></h4>
+<a href="adduser.html">Add a new User</a>
+</td></tr><tr><td>
+
+<<
+if clear_users[2,1]<>'' and clear_users[2,1]<>'ERROR' then
+for name=clear_users rowname=x do
+ display '
+    <table cellpadding="0" cellspacing="0" border="0">
+     <tr>
+      <td>
+       <div style="width: 40px; height: 40px; background: #ffffff; padding: 8px; border: 2px solid #888888; border-right: none; text-align: center;">
+        <table width=100% height=100% cellpadding=0 cellspacing=0 border=0>
+         <tr>
+          <td align=center valign=center>'+ci_img(ci_approot+'/security/photos/'+lower(x[2]),32,32,'FALSE')+'</td>
+         </tr>
+        </table>
+       </div>
+      </td>
+      <td>
+       <div style="width: 420px; height: 40px; background: #e4e4e4; padding: 8px; border: 2px solid #888888; border-left: none; text-align: center;">
+        <table width=100% height=100% cellpadding=0 cellspacing=0 border=0>
+         <tr>
+          <td align="left" valign=center>
+
+<a href="edituser.html" name="record" value="'+x[1]+'">'+x[3]+'</a> <i>('+x[2]+')</i><br>'+x[8]+'<br><span class="tiny">Member Of: '+x[5]+'</span>
+
+          </td>
+         </tr>
+        </table>
+       </div>
+      </td>
+     </tr>
+
+
+ ' /display
+/for
+/if
+>>
+    </table>
+ </center>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<html>
+ <head><title>Image Services Control Panel</title></head>
+ <style>
+  TD      {font-size: 12pt; font-family: arial,helvetica; font-weight: normal; color: #333333}
+  A       {font-size: 10pt; color: #5791CD; text-decoration: none}
+  A:Hover {color: #EEC767; text-decoration: none}
+ </style>
+ <body bgcolor="#000000">
+  <table border=0 width=100%>
+   <tr>
+    <td bgcolor="#000000" valign="center" width="32"><img src="/apps/imageservices/images/logo.gif" width="32" height="32" align="left"></td>
+    <td align="left" valign="center"><font color="#AAAAAA">&nbsp;<b>Image&nbsp;Services&nbsp;(<<if ci_registered="TRUE" then else display 'un' /display /if>>registered&nbsp;version&nbsp;<<ci_registeredversion>>)</b></font></td>
+    <td align="right"><<if iconpage<>"ERROR" then display '<a href="'+iconpage+'" target=_top>DESKTOP</a>&nbsp;&nbsp;|&nbsp;&nbsp;' /display/if>><a href="http://clearimageonline.com/apps/imageservices/imageservices.pdf" target="new">MANUAL</a>&nbsp;&nbsp;</td>
+   </tr>
+  </table>
+ </body>
+</html>

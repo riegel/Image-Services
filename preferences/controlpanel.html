@@ -1,0 +1,60 @@
+<<
+# BEGIN DLL.lib automatic install / update code /#
+if DLLVersion<>'Up To Date' then
+ if isfile('/system/clearimage/DLL.lib') then
+  expand file='/system/clearimage/DLL.lib' /expand
+  server_version()
+  dll_version=dll_version()
+ else
+  dll_version=0
+  DLL_serverversion=1
+  CI_serverversion=0
+ /if
+ if DLL_serverversion<>dll_version and domainname<>'clearimageonline.com' then
+  #--- Update DLL.lib --- /#
+  if not(isdir('/system/clearimage/')) then
+   sysmd('/system/clearimage/')
+  /if
+  thefile='/system/clearimage/DLL.bb'
+  temp=NETWEB('clearimageonline.com/home/DLL.bb',50000000,600,'GET','','',thefile)
+  fpl=FILEPACKLIST(thefile)
+  temp=fileunpack(thefile,'/system/clearimage/','')
+  sysfixprivate('/system/clearimage/app_install.txt')
+  DLLversion.lib="ERROR"
+  expand file='/system/clearimage/DLL.lib' /expand
+  server_version()
+  dll_version=dll_version()
+ else
+  DLLVersion='Up To Date'
+ /if
+/if
+# END   DLL.lib automatic install / update code /#
+
+
+
+
+
+
+
+if ci_iscprun='ERROR' then
+ ci_iscprun='Loading Image Services...'
+else
+ ci_iscprun='Reloading Image Services...'
+/if
+ci_filetype="ERROR"
+>>
+<html>
+ <head>
+  <title>Image Services Control Panel</title>
+  <meta http-equiv="refresh" content="0;url=<<getlink('start.html')>>">
+ </head>
+ <body>
+  <table width=100% height=100%>
+   <tr>
+    <td align=center valign=center>
+     <img src="/apps/imageservices/images/imageserviceslogo.jpg" width="400" height="75" border="0"><br><<ci_iscprun>>
+    </td>
+   </tr>
+  </table>
+ </body>
+</html>

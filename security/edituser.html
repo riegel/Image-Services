@@ -1,0 +1,91 @@
+<<
+temp=dbgetrec(ci_approot+'/security/clear_users',record)
+clear_groups=dbsearch(ci_approot+'/security/clear_groups','CLEAR_USER="ROOT"',1,1000)
+>>
+<html>
+<head>
+ <title>Edit User - <<CLEAR_NAME>></title>
+ <meta http-equiv="pragma" content="no-cache">
+ <meta http-equiv="cache-control" content="no-cache">
+ <style>
+ <!--
+ BODY    {background: #888888;}
+ BODY,TD {font-size: 9pt; font-family: Verdana; font-weight: normal; color: #000000}
+ A       {color: #2B4F9E; text-decoration: none}
+ A:Hover {color: #2B4Fff; text-decoration: underline}
+ -->
+ </style>
+ </head>
+<body>
+<form action="edituser" method="post" accept-charset="utf-8">
+<center>
+<table cellpadding="3">
+<tr><td colspan="2">
+<h2>Security Clearance Manager</h2>
+<h4>Edit User</h4>
+</td></tr>
+
+<tr>
+ <td bgcolor="#ffffff" style="width: 140px; height: 140px;" align="center"><<ci_imgnr(ci_approot+'/security/photos/'+lower(clear_user),128,128,'TRUE')>></td>
+ <td bgcolor="#eeeeee">
+  <table cellpadding="3" cellspacing="0" width="100%">
+   <input type="hidden" name="record" value="<<record>>">
+<<
+for name=clear_users.conf rowname=x do
+ if x[1]<>'CLEAR_MYGROUPS' then
+  if count(x[1],'PASSWORD')>0 then t='PASSWORD' else t='TEXT' /if
+  display '   <tr><td bgcolor="#eeeeee" align="right">'+x[1]+'</td><td bgcolor="#eeeeee"><input type="'+t+'" name="'+x[1]+'" size="30"></td></tr>' /display
+ /if
+/for
+CLEAR_MYCHECKGROUPS=split(clear_mygroups,' ')
+>>
+  </table>
+ </td>
+</tr>
+<<
+if clear_groups<>'' and clear_groups<>'ERROR' then
+
+display '
+<tr>
+ <td bgcolor="#cccccc" colspan="2">
+<b>'+clear_name+' is a member of the following groups:</b><hr>
+<table width="100%" cellpadding="3" cellspacing="0" border="0">' /display
+ bg=''
+ for name=clear_groups rowname=x do
+  if bg='' then bg=' bgcolor="#dddddd"' else bg='' /if
+  display '<tr><td align="right"'+bg+'><input type="checkbox" name="clear_mycheckgroups" value="'+x[2]+'"></td><td'+bg+'>'+x[2]+'<br><span style="font-size: 8pt;">'+x[3]+'</span></td></tr>' /display
+ /for
+display '
+</table>
+ </td>
+</tr>'
+/display
+/if
+>>
+<tr><td bgcolor="#aaaaaa" colspan="2"><input type="submit" name="mybutton" value="Submit"> | <input type="submit" name="mybutton" value="Delete"> | <input type="submit" name="mybutton" value="Cancel"></td></tr>
+
+</table>
+</center>
+</form>
+</body>
+</html>
+<<overlay edituser
+ clear_mygroups=''
+ for name=clear_mycheckgroups rowname=x do
+  clear_mygroups=clear_mygroups+x[1]+' '
+ /for
+ clear_mygroups=left(clear_mygroups,length(clear_mygroups)-1)
+
+if clear_mygroups='ERROR' then goto 'a'+clear_mygroups+'.html' /if
+
+ if mybutton="Reload" or clear_user='' or clear_user='ERROR' or clear_password='' or clear_password='ERROR' then
+  goto page
+ /if
+ if mybutton="Submit" then
+  clear_user=aestivafilename(clear_user)
+  temp=dbedit(ci_approot+'/security/clear_users',record)
+ elif mybutton="Delete" then
+  temp=dbdelete(ci_approot+'/security/clear_users',record)
+ /if
+ goto "users.html"
+>>

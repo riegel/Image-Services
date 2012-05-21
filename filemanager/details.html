@@ -1,0 +1,61 @@
+<<
+expand file=ci_approot+"getimage.lib" /expand
+expand file="filemanager.lib" /expand
+destination=replaceall(destination,"//","/")
+
+if fm_cmd="delete" or fm_cmd="copy" or fm_cmd="paste" then
+ fm_command=fm_cmd
+ goto "command.html"
+elif fm_cmd='upload' then
+ if trim(fm_list)='|' or trim(fm_list)='' then
+  goto "uploadfile.html" 
+ else
+  goto "uploadselection.html"
+ /if
+elif fm_cmd='users' then
+  goto ci_approot+'/security/users.html'
+elif fm_cmd='groups' then
+  goto ci_approot+'/security/groups.html'
+elif fm_cmd='terminal' then
+  telnetcmd='ls -al "[private]'+destination+'"'
+  goto ci_approot+'/preferences/telnet.html'
+/if
+
+fm_list=trim(fm_list)
+if left(fm_list,1)='|' then fm_list=right(fm_list,length(fm_list)-1) /if
+
+if count(fm_list,'{BAD}')>0 then goto 'badfilenamefix.html' /if
+
+>>
+<html>
+<head>
+ <<fm_style>>
+ <<fm_icons>>
+ <<if count(fm_list,'.mov')>0 then display '<script type="text/javascript" src="/apps/imageservices/jscripts/qtobject.js"></script>' /display /if>>
+ <<if count(fm_list,'.mp3')>0 then display '<script type="text/javascript" src="/apps/imageservices/jscripts/audio/soundmanager2.js"></script>' /display /if>>
+
+
+
+
+ <script>
+  <<if fm_cmd='reload' then display "  top.frames['browse'].window.location.reload();" /display /if>>
+  setTimeout(function(){top.frames['path'].select();},2000);
+
+
+ </script>
+</head>
+<body>
+ <<fm_displaypagebegin()>>
+ <table width="100%" cellpadding="0" cellspacing="0" border="0">
+ <tr>
+  <td align=center valign=top bgcolor=#ffffff>
+   <<showdetails(fm_list)>>
+  </td>
+ </tr>
+ </table>
+</body>
+</html>
+<<OVERLAY pushit
+x=split(fm_down,"|")
+filepush(x[1,1],"application/xyz")
+>>

@@ -1,0 +1,56 @@
+<<
+temp=dbgetrec(ci_approot+'/security/clear_groups',record)
+>>
+<html>
+<head>
+ <title>Edit Group - <<CLEAR_GROUPNAME>></title>
+ <meta http-equiv="pragma" content="no-cache">
+ <meta http-equiv="cache-control" content="no-cache">
+ <style>
+ <!--
+ BODY    {background: #888888;}
+ BODY,TD {font-size: 9pt; font-family: Verdana; font-weight: normal; color: #000000}
+ A       {color: #2B4F9E; text-decoration: none}
+ A:Hover {color: #2B4Fff; text-decoration: underline}
+ -->
+ </style>
+ </head>
+<body>
+<center>
+<form action="edituser" method="post" accept-charset="utf-8">
+<table>
+<tr><td colspan="2">
+<h2>Security Clearance Manager</h2>
+<h4>Edit Group</h4>
+</td></tr>
+<tr>
+ <td align="center" valign="middle" style="width: 140px; height: 140px; background-color: #bbbbbb"><<ci_img(ci_approot+'/security/photos/'+lower(clear_user),128,128,'TRUE')>></td>
+ <td style="background-color: #bbbbbb" valign="top" align="right">
+  <table cellpadding="3">
+   <input type="hidden" name="record" value="<<record>>">
+<<
+ display '
+<tr><td bgcolor="#eeeeee">CLEAR_GROUPNAME</td><td bgcolor="#eeeeee"><input type="text" name="CLEAR_GROUPNAME" size="30"></td></tr>
+<tr><td bgcolor="#eeeeee">CLEAR_GROUPDESC</td><td bgcolor="#eeeeee"><textarea name="CLEAR_GROUPDESC" rows="3" cols="30"></textarea></td></tr>
+' /display
+CLEAR_USER='ROOT'
+>>
+
+  </table>
+ </td>
+</tr>
+<tr><td colspan="2" align="center"><input type="submit" name="mybutton" value="Submit"> | <input type="submit" name="mybutton" value="Delete"> | <input type="submit" name="mybutton" value="Cancel"></td></tr>
+</table>
+</form>
+</center>
+</body>
+</html>
+<<overlay edituser
+if mybutton="Submit" then
+ clear_groupname=aestivafilename(clear_groupname)
+ temp=dbedit(ci_approot+'/security/clear_groups',record)
+elif mybutton="Delete" then
+ temp=dbdelete(ci_approot+'/security/clear_groups',record)
+/if
+goto "groups.html"
+>>

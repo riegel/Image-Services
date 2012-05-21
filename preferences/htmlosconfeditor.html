@@ -1,0 +1,29 @@
+<<
+# Clever little trick to update this on the web site /#
+# Move htmlos.conf to editable area /#
+cmd='cp [script]/htmlos.conf [private]/apps/imageservices/tmp/htmlos.conf'
+cmd2=aliascommand(cmd)
+shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+copy file="/apps/imageservices/tmp/htmlos.conf" to htmlos.conf /copy
+>>
+<html>
+ <head>
+  <title>htmlos.conf Editor</title>
+ </head>
+ <body>
+  <a href="<<page>>">RELOAD</a><hr>
+  <pre><<htmlos.conf>></pre><hr>
+  Editing your htmlos.conf file can be very dangerous. Proceed with caution. To edit your file click the EDIT link. When finished save your changes. Then commit them by clicking the WRITE link.<br>
+  <<ci_edit('/apps/imageservices/tmp/htmlos.conf',650,500,'EDIT htmlos.conf','','TRUE')>> | <a href="saveit">WRITE htmlos.conf</a>
+ </body>
+</html>
+<<overlay saveit
+  # Clever little trick to update this on the web site /#
+  # Move from editable area to regular location /#
+  cmd='cp [private]/apps/imageservices/tmp/htmlos.conf [script]/htmlos.conf'
+  cmd2=aliascommand(cmd)
+  shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+
+  copy file="/apps/imageservices/tmp/htmlos.conf" to htmlos.conf /copy
+  goto page
+>>

@@ -1,0 +1,43 @@
+<<
+a=getenv('QUERY_STRING')
+a=split(a,'&')
+
+
+if a[1]='txt' then
+ if fm_searchtext='ERROR' then fm_searchtext='' /if
+ if auth(2)=1 then
+  ci_programparams=destination+'/'+a[1,2]+'|'+fm_searchtext+'|'+page+'|'+fm_prefs[9]+'|'+fm_prefs[10]+'|0|'+a[1,3]
+ else
+  ci_programparams=destination+'/'+a[1,2]+'|'+fm_searchtext+'|'+page+'|'+fm_prefs[9]+'|'+fm_prefs[10]+'|9|'+a[1,3]
+ /if
+ goto ci_approot+'editor.html'
+elif a[1]='pict' then
+ ci_imagepath=destination+'/'+a[1,2]
+ goto ci_approot+'upload.html'
+elif a[1]='db' then
+ HTMLOS.APPINPUT=destination+a[1,2]
+ goto "/apps/dbcons/bin/dbcons.html"
+ goto 'dbconsolehelper.html'
+elif a[1]='path' then
+ goto "path.html"
+elif a[1]='toolbar' then
+ goto "toolbar.html"
+/if
+
+
+
+
+
+
+
+>>
+<html>
+<a href="<<page>>">reload</a>
+<hr>
+QUERY_STRING: <<getenv('QUERY_STRING')>>
+<br>
+DESTINATION: <<destination>>
+<br>
+<<ci_table(a)>>
+<<a[2]>>|<<a[1,2]>>|<<a[2,1]>>
+</html>

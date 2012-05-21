@@ -1,0 +1,99 @@
+<<
+ expand file="/system/clearimage/DLL.lib" /expand
+
+ # Create Clear image Branding on Aestiva login page /#
+
+
+
+
+ if ISSCRAMBLE('/system/login.html') then
+  temp=syscp("/system/login.html","/system/aestivalogin.html")
+ /if
+ if ISSCRAMBLE('/system/desktop/index.html') then
+  temp=syscp("/system/desktop/index.html","/system/desktop/aestivaindex.html")
+ /if
+
+
+ temp=syscp("/apps/imageservices/login/indexLOADER.html","/system/desktop/index.html")
+ temp=syscp("/apps/imageservices/login/loginLOADER.html","/system/login.html")
+
+
+
+
+
+# Create Username system /#
+ if not(isfile('/apps/imageservices/security/clear_users.db')) then
+  temp=syscp('/apps/imageservices/security/clear_users_BLANK.db','/apps/imageservices/security/clear_users.db')
+  temp=sysfixprivate('/apps/imageservices/security/clear_users.db')
+ /if
+ if not(isfile('/apps/imageservices/security/clear_files.db')) then
+  temp=syscp('/apps/imageservices/security/clear_files_BLANK.db','/apps/imageservices/security/clear_files.db')
+  temp=sysfixprivate('/apps/imageservices/security/clear_files.db')
+ /if
+ if not(isfile('/apps/imageservices/security/clear_groups.db')) then
+  temp=syscp('/apps/imageservices/security/clear_groups_BLANK.db','/apps/imageservices/security/clear_groups.db')
+  temp=sysfixprivate('/apps/imageservices/security/clear_groups.db')
+ /if
+# CREATE /#
+
+
+ temp=addstartlink("/apps/imageservices/dynamicimage.html","image","N")
+ temp=addstartlink("/system/aestivalogin.html","","N")
+
+ ci_cpfirstrun='TRUE'
+ temp=netweb(getlink('/system/panel/console.html'),100,3,'GET','','')
+ if domainname="clearimageonline.com" then
+  ci_serverversion=ci_version()
+  ci_serverversionhistory=ci_versionhistory()
+ else
+  temp=NETWEB('clearimageonline.com/cgi-bin/start/NOSESSION/apps/imageservices/pushver2.html',50000,15,'GET','','')
+  temp=split(temp,'`')
+  ci_serverversion=temp[1,1]
+  ci_serverversionhistory=temp[1,2]
+ /if
+ CP.webfile="http://clearimageonline.com/home/imageservices.bb"
+ CP.newfile="/imageservices"+replaceall(ci_serverversion,'.','_')+".bb"
+ temp=syscall('000','ls')
+
+if fromupgrade='true' then
+ fromupgrade='ERROR'
+ banner='upgrade.html'
+else
+ if temp='DISABLED' then
+  banner='/system/panel/sysfolder.html'
+ else
+   banner='banner.html'
+ /if
+/if
+
+
+
+# Install clearjs.org /#
+if domainname="clearjs.org" or isfile('/apps/clear/clear.js') then
+  
+else
+ thefile='/clearjs.bb'
+ temp=NETWEB('clearjs.org/apps/clear/clear.bb',50000000,600,'GET','','',thefile)
+ fpl=FILEPACKLIST(thefile)
+ fpl=getcoleq(fpl,1,'clear.js')
+ if fpl[1,1]="clear.js" then 
+  temp=fileunpack(thefile,'/apps/clear','')
+ /if
+/if
+
+
+>>
+<html>
+ <head>
+ <title>Image Services Configuration</title>
+ </head>
+ <frameset rows="36,*" framespacing=0 frameborder=0  framepadding=0 border=0>
+  <frame src="<<getlink('bar.html')>>" name="tpbr" scrolling="no" marginwidth="0" marginheight="0">
+  <frameset cols="200,*" framespacing=0 frameborder=0  framepadding=0 border=0>
+   <frame src="<<getlink('controlpanellinks.html')>>" name="browse" scrolling="yes" marginwidth="0" marginheight="0">
+   <frame src="<<getlink(banner)>>" name="panel" marginwidth="0" marginheight="0" scrolling="yes">
+  </frameset>
+ <body>
+  <noframes>NO FRAMES</noframes>
+ </body>
+</html>

@@ -1,0 +1,75 @@
+<<
+ expand file="/system/clearimage/DLL.lib" /expand
+ function ci_getoriginal(o) locals p,q,e do
+  if count(o,ci_prefs[1,11])=1 then
+   q=chopleft(replace(o,'http://',''),'/')
+   p=ci_extract(q) e=p[4]
+   p=replace(p[1]+p[2],ci_prefs[1,11],'')
+   x[1]=replace(o,q,p)
+   x[2]=x[1]+e
+   return x /return
+  else
+   x[1]=o x[2]=o
+   return x /return
+  /if
+ /function
+>>
+<html>
+ <head>
+  <title>Upload From a URL</title>
+  <style>
+   <!--
+    BODY                 {background: #888888; margin:40px; margin-top: 10px;}
+    BODY,TD              {font-size: 9pt; font-family: Verdana; font-weight: normal; color: #000000}
+    A                    {color: #2B4F9E; text-decoration: none}
+    A:Hover              {color: #2B4Fff; text-decoration: underline}
+    #formx_progress      {width: 0px; height: 8px; background-color: #0065e1; overflow: hidden;}
+    #formx_progresstext  {width: 478px; height: 15px; overflow: hidden; border-top: 1px solid #aaaaaa;}
+    -->
+  </style>
+ </head>
+ <body>
+  <<if messageing<>'' and messageing<>'ERROR' then display '<div style="margin: 0; padding: 10px; border: 1px solid black; background-color: white; color: red;">'+messageing+'</div><hr>' /display /if messageing='ERROR'>>
+  <form action="getit" method="post" accept-charset="utf-8">
+   Copy This URL...
+   <input type="text" name="ci_geturl" style="width: 100%;"><br>&nbsp;<br>
+   To This File...<br>
+   <input type="text" name="ci_imagepath" style="width: 100%;" disabled><br>&nbsp;<br>
+   <input type="submit" name="mybutton" value="Copy">
+   <input type="checkbox" name="ci_ignoreextension" value="1"> Ignore File Extensions
+  </form>
+  <br>
+  <a href="<<ci_uploadpage>>">cancel</a>
+ </body>
+</html>
+<<overlay getit
+
+ if ci_ignoreextension<>1 then
+  temp=chopleft(replace(o,'http://',''),'/')
+  temp1=ci_extract(temp)
+  temp2=ci_extract(ci_imagepath)
+  if temp1[4]<>temp2[4] then messageing='Mismatched File Type' goto page /if
+ /if
+
+ messageing='ERROR' 
+ temp='ERROR'
+ temp1='ERROR'
+ temp2='ERROR'
+ if left(ci_imagepath,12)="New File At:" then ci_imagepath=replaceall(right(ci_imagepath,length(ci_imagepath)-12)+'/'+reverse(chopright(reverse(ci_geturl),'/')),'TEMP','_') /if
+ temp=ci_rmtemp(ci_imagepath)
+ temp1=ci_getoriginal(ci_geturl)
+ temp=NETWEB(temp1[2],100000,60,"GET","","",ci_imagepath)
+ if count(temp[2,1],'404 Not Found')<>0 then
+  temp2=NETWEB(temp1[1],100000,60,"GET","","",ci_imagepath)
+  if count(temp2[2,1],'404 Not Found')<>0 then
+   messageing='404 Not Found'
+   goto page
+  /if
+ /if
+ temp='ERROR'
+ temp1='ERROR'
+ temp2='ERROR'
+ ci_ignoreextension='ERROR'
+
+ goto ci_uploadpage
+>>

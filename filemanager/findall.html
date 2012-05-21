@@ -1,0 +1,161 @@
+<<
+# Search and replace list....
+
+http://clearimageonline.com
+syspublicurl
+/apps/imageservices/search.lib
+expand file="/clearimage/libraries/email.lib" /expand
+expand file="/apps/imageservices/upload.lib" /expand
+/libraries/upload.html
+www.clearimageonline.com
+/tshirts/
+/pages/start/
+/cgi-bin/start
+NOSESSION
+tag_action
+tag_controller
+tag0
+tag1
+tag2
+tag3
+ci_approot
+/livetalk/
+/usr/home/
+/clearimage/dynamicimage.html <== Start link Allow
+
+/#
+
+sysmd('/apps/imageservices/filemanager/ignore/')
+copy file='/apps/imageservices/filemanager/ignore/'+hash(destination)+'.txt' to fm_ignorenames /copy
+
+
+
+function findall(d,srch,notsrch,ignore) locals temp,temp1,temp2,temp3,temp4,s,x,findresult,q,q1 do
+ findresult='ERROR'
+ if ((systime-b)/1000)>15 then
+  x='ERROR' x[1]=d+'<br>TERMINATED: Search took longer than 15 Seconds' x[2]=''
+  findresult=appends(findresult,x)
+  return findresult /return
+ /if
+ temp=filelist(d)
+ counter=1 total=rows(temp)
+ for name=temp rowname=s do
+  if count(ignore,s[1])=0 then
+   q=ci_fileinfo(s[1])
+   if q[2]='txt' then
+    if s[2]<fm_maxsize then
+     copy file=d+s[1] to temp2 /copy
+     temp1=count(temp2,srch)
+     if notsrch='' or notsrch='ERROR' then temp4=0 else temp4=count(temp2,notsrch) /if
+     if temp1>temp4 then
+      x='ERROR'
+      x[1]=ci_edit(d+s[1],800,600,d+s[1],srch,'TRUE') x[2]=temp1 x[3]=temp4
+      findresult=appends(findresult,x)
+     /if
+    else
+     x='ERROR' x[1]=d+s[1] x[2]=replace(chopright(size(s[2]),' ('),' (','')
+     findresult=appends(findresult,x)
+    /if
+   elif s[4]='DIR' and s[1]<>'.TEMP' then
+    temp3=findall(d+s[1]+'/',srch,notsrch,ignore)
+    findresult=appends(findresult,temp3)
+   /if
+  else
+   x='ERROR' x[1]=d+s[1] x[2]='IGNORE'
+   findresult=appends(findresult,x)
+  /if
+  counter=counter+1
+ /for
+ return findresult /return
+/function
+
+function showresults(list) locals x,text do
+ text='<table cellpadding="0">'
+ for name=list rowname=x do
+  text=text+'<tr><td>'+x[1]+'</td><td>'+x[2]+'</td><td>'+x[3]+'</td></tr>'
+ /for
+ text=text+'</table>'
+ return text /return
+/function
+
+
+if fm_maxsize='' or fm_maxsize='ERROR' or not(isinteger(fm_maxsize)) then fm_maxsize=204800 /if
+>>
+<html>
+ <head>
+  <title>Find All</title>
+  <script src="/apps/clear/clear.js"></script>
+  <link rel="stylesheet" type="text/css" href="/apps/imageservices/filemanager/style.css" media="all">
+  <style>
+   body {margin: 20px;}
+   input {width:200px;}
+   .option {display: block; width:250px; height: 40px; float:left; border:1px solid black; padding:10px; margin:5px;}
+   .search {display: block; width:532px; height: 40px; float:left; border:1px solid black; padding:10px; margin:5px;}
+   .action {display: block; width:552px; float:left; border:none; padding:0; margin:5px; text-align:center;}
+   #results{display: block; width:555px; float:left; border:none; padding:0; margin:5px; text-align:left;}
+   table   {width: 552px; overflow: auto;}
+   td      {margin:2px; padding:5px; background-color: #eeeeee; color: #777777;}
+   #submit {width:550px;}
+   #main   {width:580px;}
+  </style>
+  <script>
+   function onAJAX(){
+    CLEAR.f.$('results').innerHTML='Loading...';
+   }
+  </script>
+ </head>
+ <body>
+  <div id="main">
+   <h1>Recursive Search all <a href="showtextfiletypes" AJAX>text</a> files.</h1>
+   <form action="findall" method="post" AJAX>
+    <div class="search">
+     <p>
+      Search for<input type="text" name="fm_searchtext" id="search">, But not<input type="text" name="fm_notsearchtext">
+     </p>
+    </div>
+    <div class="option">
+     Files under <<size(fm_maxsize)>>:<br>
+     <input type="text" name="fm_maxsize">
+    </div>
+    <div class="option">
+     Ignore files or directories named:<br>
+     <input type="text" name="fm_ignorenames" id="ignore">
+    </div>
+    <div class="action">
+     <p>
+      <input type="submit" name="mybutton" value="Search <<destination>>" id="submit">
+     </p>
+    </div>
+   </form>
+   <div id="results">
+    <<showresults(list)>><<list=''>>
+   </div>
+  </div>
+ </body>
+</html>
+<<overlay findall
+ sysmd('/apps/imageservices/filemanager/ignore/')
+ copy fm_ignorenames to file='/apps/imageservices/filemanager/ignore/'+hash(destination)+'.txt' /copy
+ b=systime
+ ci_searchtext=fm_searchtext
+ list=findall(destination,fm_searchtext,fm_notsearchtext,fm_ignorenames)
+ temp='Searching for "'+fm_searchtext+'"'
+ if fm_notsearchtext<>'' and fm_notsearchtext<>'ERROR' then
+  temp=temp+', but not "'+fm_notsearchtext+'"'
+ /if
+ temp=temp+' in "'+destination+'".<br>'
+ if ((systime-b)/1000)>15 then
+  writeHTML('results',temp+'Partial Search '+((systime-b)/1000)+' seconds'+showresults(list))
+ else
+  writeHTML('results',temp+'Search Completed in '+((systime-b)/1000)+' seconds'+showresults(list))
+ /if
+ mybutton="Search "+destination
+ updatevars('mybutton')
+ endOVERLAY()
+>>
+<<overlay showtextfiletypes
+ temp=GETCOLEQ( ci_filetype , 2 , 'txt' )
+ temp=gettable(temp,1,3,1,rows(temp))
+ writeHTML('results',ci_table(temp))
+ endOVERLAY()
+>>

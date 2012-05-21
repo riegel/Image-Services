@@ -1,0 +1,62 @@
+<<
+function removepreview(infile) locals data do
+ data=bintotext(infile)
+ data=chopleft(data,'%!PS-Adobe')
+ data=chopright(data,'%%EOF')
+ o=texttobin(data,infile)
+ return 'finished' /return  
+/function
+
+
+
+expand file="/system/clearimage/DLL.lib" /expand
+if pswidth="ERROR" or psheight="ERROR" or psdpi="ERROR" then
+ pswidth="612" psheight="792" psdpi="72" psscale=".5"
+/if
+if right(fm_psfile,3)='.ps' then
+ gsresult=ci_showps(fm_psfile,pswidth,psheight,psdpi)
+else
+ gsresult=ci_showeps(fm_psfile,psdpi)
+/if
+gsresult=replace(gsresult,^GPL Ghostscript 8.63 (2008-08-01)
+Copyright (C) 2008 Artifex Software, Inc.  All rights reserved.
+This software comes with NO WARRANTY: see the file PUBLIC for details.^,^^)
+
+temp=chopleft(gsresult,'(')
+temp=chopright(temp,')')
+temp=replace(temp,'(','')
+temp=replace(temp,')','')
+temp=trim(temp)
+temp=split(temp,' ')
+pswidth=temp[1,1]
+psheight=temp[1,2]
+>>
+<html>
+ <head>
+  <title>Postscript Viewer (<<fm_psfile>>)</title>
+  <<fm_style>>
+ </head>
+ <body style="padding: 20px; bgcolor: #eeeeee; font-family: Sans-Serif;">
+  << if count(gsresult,'ERROR')>0 then display '<embed hidden="true" autostart="true" width="1" height="1" src="/apps/imageservices/filemanager/abort.mp3"></embed>' /display /if>>
+  <a href="<<page>>">PRINT</a> | <<ci_edit(fm_psfile,800,600,'EDIT','','TRUE')>> | <a href="getpdf">Get PDF</a> | <a href="removepreview" name="fm_psfile" value="<<fm_psfile>>">Remove Preview</a><hr>
+  <h1><<fm_psfile>></h1>
+  <form action="<<page>>" accept-charset="utf-8">
+   <<if right(fm_psfile,4)<>'.eps' then display '   <input type="text" name="pswidth" size="6">,<input type="text" name="psheight" size="6"> ' /display /if>>Resolution:<input type="text" name="psdpi" size="6"> Scale:<input type="text" name="psscale" size="6"> <input type="submit" name="mybutton" value="Change">
+  </form>
+  <hr>
+  <div style="width:<<round(pswidth*psscale)>>; height:<<round(psheight*psscale)>>; padding:0; margin:0; border: 1px solid red;">
+   <<temp=ci_img(fm_psfile+'.png',round(pswidth*psscale),round(psheight*psscale),'FALSE') temp1=sysrm(fm_psfile+'.png') display temp /display>>
+  </div>
+  <hr>
+  Ghostscript Results<br>
+  <<ta=count(gsresult,lf)+3 if ta>25 then ta=25 /if>>
+  <textarea name="gsresult" rows="<<ta>>" cols="60" wrap="off"></textarea>
+ </body>
+</html>
+<<overlay getpdf
+temp=ci_makepdf(fm_psfile)
+>>
+<<overlay removepreview
+ removepreview(fm_psfile)
+ goto page
+>>

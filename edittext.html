@@ -1,0 +1,563 @@
+<<
+expand file="/system/clearimage/DLL.lib" /expand
+
+# /#
+
+# if ci_programparams comes in set then use its values (they will be set by a link)
+  [1] - /path/to/file
+  [2] - searchstring
+  [3] - calling program
+  [4] - WindowWidth
+  [5] - WindowHeight
+  [6] - Privledge Level 0-admin thru 9-readonly Users can edit anything >= to their level
+  [7] - FieldID to Edit
+  [8] - WYSIWYG (TRUE or FALSE)
+
+Terry to add.
+
+  1 - Options for font size font face printable file open file save
+* 2 - Auto Backup with revert to saved options.
+
+* done
+
+/#
+
+
+
+
+
+
+
+
+
+if HTMLOS.APPINPUT<>"ERROR" then
+ ci_textpath=HTMLOS.APPINPUT
+ ci_searchpath=""
+ ci_return="/apps/filemanager/index.html"
+ ci_wid=50
+ ci_hgt=15
+ ci_srch="SIMPLE"
+ HTMLOS.APPINPUT="ERROR"
+/if
+if ci_programparams<>"ERROR" then
+ ci_temp=listtorow(ci_programparams,"|")
+ ci_textpath=ci_temp[1]
+ ci_searchtext=ci_temp[2]
+ ci_return=ci_temp[3]
+ ciwid=round((ci_temp[4]+2)/8)
+ cihgt=round((ci_temp[5]-19)/13)
+ ci_wysiwyg=ci_temp[8]
+ ci_srch=ci_temp[2] if ci_srch="SIMPLE" then ci_searchtext="" /if
+ ci_programparams="ERROR"
+/if
+
+
+ci_temp_path=getfilepath(ci_textpath)
+if count(ci_temp_path,ci_prefs[1,11])>0 then
+ ci_readonly='TRUE'
+ if ci_message='ERROR' then ci_message='' /if
+ ci_message='<span class="Red">READ ONLY</span>'+ci_message
+/if
+
+if ci_wysiwyg="ERROR" then ci_wysiwyg="FALSE" /if
+
+
+ ci_pathtable=ci_extract(ci_textpath)
+ ci_temp=ci_pathtable[1]+ci_pathtable[6]+ci_pathtable[2]+ci_prefs[1,4]+"BAK"
+ ci_backups="ERROR"
+ for name=x value=0 to 9 do
+  if isfile(ci_temp+x+ci_pathtable[4]) then
+   if ci_backups="ERROR" then 
+    ci_backups=fileinfo(ci_temp+x+ci_pathtable[4])
+   else
+    append fileinfo(ci_temp+x+ci_pathtable[4]) to ci_backups /append
+   /if
+  else
+   ci_pathcounter=x
+  /if
+ /for
+ if ci_pathcounter="ERROR" then ci_pathcounter=0 /if
+
+
+
+function jscript(text) do
+ if jsc="TRUE" then return " "+text /return else return "" /return /if
+/function
+
+function hscript(text) do
+ if jsc<>"TRUE" then return " "+text /return else return "" /return /if
+/function
+
+function testjscript(in) locals temp do
+if in=1 then
+ temp=hscript('onload=document.jtest.submit()')
+else
+ temp=hscript('
+ <!--This form detects if javascript is working. If so it will set jsc="TRUE"-->
+ <!--It is encased in an hscript() function to not show up if I already know Javascript is on-->
+ <form action="'+page+'" method="post" name="jtest" accept-charset="utf-8">'+aaa+'
+  <input type="hidden" name="jsc">
+  <script language="javascript">
+   <!--
+    document.jtest["jsc"].value = "TRUE"
+   -->
+  </script>
+ </form>')
+ /if
+ return temp /return
+/function
+
+function ci_title(path) do
+ path=replaceall(replace(path,fm_chroot,"/"),"//","/")
+ if ci_srch="SIMPLE" then path=replace(replace(reverse(chopright(reverse(path),"/")),"/",""),".txt","") /if
+ return path /return
+/function
+ci_textpath=replaceall(ci_textpath,"//","/")
+>>
+<html>
+<<
+ ci_enterpage="ERROR"
+ ci_pathinfo=fileinfo(ci_textpath) a=ci_pathinfo ci_pathinfo=ci_pathinfo[2]+"|"+ci_pathinfo[3]
+
+ copy file=ci_temp_path to ci_mytext /copy
+ if ci_searchtext<>"" and ci_searchtext<>"ERROR" then ci_searchcount='&nbsp;('+count(ci_mytext,ci_searchtext)+')&nbsp;' /if
+
+
+if right(ci_textpath,4)=".txt" then wrap="" else wrap='wrap="OFF"' /if
+
+
+display '
+<head>
+<title>'+ci_title(ci_textpath)+': NoteWeb</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+' /display
+
+if locate(ci_mytext,"<<")>0 then ci_iscode='TRUE' else ci_iscode='FALSE' /if
+if right(ci_textpath,2)=".j" then ci_iscode="TRUE" /if
+if right(ci_textpath,2)=".c" then ci_iscode="TRUE" /if
+if right(ci_textpath,4)=".css" then ci_iscode="TRUE" /if
+if right(ci_textpath,4)=".lib" then ci_iscode="TRUE" /if
+if right(ci_textpath,4)=".cgi" then ci_iscode="TRUE" /if
+if right(ci_textpath,3)=".pl" then ci_iscode="TRUE" /if
+if right(ci_textpath,3)=".js" then ci_iscode="TRUE" /if
+
+if  ci_iscode='TRUE' then
+
+
+elif ci_wysiwyg="TRUE" then
+
+display '
+<!-- tinyMCE -->
+<script language="javascript" type="text/javascript" src="/apps/imageservices/jscripts/tiny_mce/tiny_mce.js"></script>
+<script language="javascript" type="text/javascript">
+   tinyMCE.init({
+      mode : "textareas"
+   });
+</script>
+<!-- /tinyMCE -->
+' /display
+
+/if
+
+display '
+<style>
+<!--
+TEXTAREA {font-family: Lucida Console,Courier,Times; font-size: 8pt;}
+BODY {font-size: 8pt; font-family: Verdana; font-weight: normal; color: #000000; background-color:#'+getlighthexcolor(domainname,0)+'; margin:0;padding:0;border:0;}
+TD {font-size: 8pt; font-family: Verdana; font-weight: normal; color: #000000;}
+A  {color: #'+getlighthexcolor(domainname,-50)+'; text-decoration: none}
+A:Hover {color: #'+getlighthexcolor(domainname,-100)+'; text-decoration: underline}
+A.header  {color: white; text-decoration: none}
+A.header:Hover {color: #'+'+getlighthexcolor(domainname,-100)+'+'; text-decoration: underline}
+.red {color: #F00;}
+-->
+</style>' /display
+
+
+
+if ci_wysiwyg='TRUE' then
+ rscode=' resizeTo(winW,winH-76);'
+else
+ rscode='
+ txtarea=document.getElementById("txtarea");
+ txtarea.style.width=winW+"px";
+ txtarea.style.height=winH+"px";'
+/if
+
+ tempresize='function resizetextarea()
+{
+ var winW = 630, winH = 460;
+ if (parseInt(navigator.appVersion)>3) {
+  if (navigator.appName=="Netscape") {
+   winW = window.innerWidth-4;
+   winH = window.innerHeight-27-4;
+  }
+  if (navigator.appName.indexOf("Microsoft")!=-1) {
+   winW = document.body.offsetWidth-4;
+   winH = document.body.offsetHeight-32-4;
+  }
+ }
+'+rscode+'
+ sf();
+}'
+
+
+if ci_iscode='TRUE' then temp=' document.forms.thetext.lines.value=countLines('+"'"+'txtarea'+"'"+');' else temp='' /if
+display jscript('
+<script language="javascript">
+<!--
+
+
+
+
+  if( document.captureEvents && Event.KEYUP ) { document.captureEvents( Event.KEYUP ); }
+   document.onkeyup=checkSave;
+
+
+
+
+
+function checkSave(e) {
+ var kc;
+ if (e && e.which)
+  { e=e;
+    kc=e.which }
+ else
+  { e=event;
+    kc=e.keyCode; }
+
+ if (kc==19) {document.thetext.submit();}
+ if (kc==63239) { searchArea(document.forms.thetext.ci_mytext,document.forms.thetext.ci_searchtext); }
+
+'+temp+'
+
+ return false;
+
+}
+
+
+
+
+
+'+tempresize+'
+
+
+
+
+
+
+function countLines(o){
+  if (!document.getElementById) { alert('+"'"+'No way to traverse DOM'+"'"+'); return; }
+  var obj = document.getElementById(o);
+  if ( obj == null ) {
+    return false;
+  }
+  // NOTE: This is using regular expressions to count spaces and linefeeds
+  var objText = obj.value.substr(0,getCursor(obj));
+  var fontFamilyAdj = obj.style.fontFamily == "Courier" ? 1.1 : .9;
+  var linefeedsArray = objText.match(/[\n\r]/g);
+  var linefeeds = ( linefeedsArray == null ? 0 : linefeedsArray.length);
+  return 1+linefeeds;
+}
+
+
+
+function countAllLines(o){
+  if (!document.getElementById) { alert('+"'"+'No way to traverse DOM'+"'"+'); return; }
+  var obj = document.getElementById(o);
+  if ( obj == null ) {
+    return false;
+  }
+  // NOTE: This is using regular expressions to count spaces and linefeeds
+  var objText = obj.value;
+  var fontFamilyAdj = obj.style.fontFamily == "Courier" ? 1.1 : .9;
+  var linefeedsArray = objText.match(/[\n\r]/g);
+  var linefeeds = ( linefeedsArray == null ? 0 : linefeedsArray.length);
+  return linefeeds;
+}
+
+
+
+function getCursor(nBox)
+{
+ var cursorPos = 0;
+ if (document.selection)
+ { 
+
+
+   nBox.focus();
+   var tmpRange = document.selection.createRange();
+   tmpRange.moveStart("character",-nBox.value.length);
+   cursorPos = tmpRange.text.length;
+ }
+ else
+ {
+   if (nBox.selectionStart || nBox.selectionStart == "0")
+   {cursorPos = nBox.selectionStart}
+ }
+ return cursorPos;
+}
+
+
+
+
+
+
+
+
+function setSelectionRange(input, selectionStart) 
+
+{
+if (input.setSelectionRange) {
+input.focus();
+input.setSelectionRange(selectionStart, selectionStart);
+}
+else if (input.createTextRange) {
+var range = input.createTextRange();
+range.collapse(true);
+range.moveEnd("character", selectionStart);
+range.moveStart("character", selectionStart);
+range.select();
+}
+}
+
+
+
+
+function sf(){
+
+
+ setSelectionRange(thetext.ci_mytext,thetext.ci_selection.value);
+
+ document.forms.thetext.ci_mytext.focus();
+ document.forms.thetext.ci_mytext.scrollTop=document.forms.thetext.ci_scroll.value;
+ document.forms.thetext.ci_mytext.scrollLeft=document.forms.thetext.ci_scrollH.value;
+}
+
+
+<!--  thetext.ci_mytext.setSelectionRange(thetext.ci_selection.value,thetext.ci_selection.value); -->
+
+
+
+
+
+
+
+
+
+
+
+
+function searchArea(txtarea,srch){
+
+ if (srch.value == "SEARCH")
+  { srch.focus(); }
+ else
+  { txtarea.focus();
+    rExp = new RegExp(srch.value,"gi");
+    var results = txtarea.value.substr(txtarea.selectionEnd,txtarea.value.length).search(rExp);
+    if (results != -1)
+     { results=results+txtarea.selectionEnd;
+       txtarea.setSelectionRange(results,results+srch.value.length);
+       document.forms.thetext.lines.value=countLines('+"'"+'txtarea'+"'"+');
+       document.forms.thetext.ci_mytext.scrollTop=(countLines('+"'"+'txtarea'+"'"+')-10)*document.forms.thetext.ci_mytext.scrollHeight/countAllLines('+"'"+'txtarea'+"'"+')
+     }
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function resizeTo(width, height) {
+    editor = document.getElementById("mce_editor_0");
+    if (editor) {
+        editor.style.width = width;
+        editor.style.height = height;
+    }
+}
+
+
+
+-->
+</script>')+'
+</head>
+'+jscript('<body onResize="resizetextarea();" onLoad="resizetextarea();sf();">')
+ +hscript('<body'+testjscript(1)+'>'+testjscript(2))+'
+<div style="margin:2;padding:0;border:0;">
+<form method="post" action="doit" name="thetext" accept-charset="utf-8">
+<input type="hidden" name="ci_textpath" value="'+encrypt(ci_textpath,'encrypt'+usernum)+'">
+<input type="hidden" name="ci_pathinfo" value="'+ci_pathinfo+'">
+<input type="hidden" name="ci_selection" value="'+ci_selection+'">
+<input type="hidden" name="ci_scroll" value="'+ci_scroll+'">
+<input type="hidden" name="ci_scrollH" value="'+ci_scrollH+'">
+&nbsp;' /display
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+a=jscript(^onclick="thetext.ci_selection.value=getCursor(thetext.ci_mytext);thetext.ci_scroll.value=thetext.ci_mytext.scrollTop;thetext.ci_scrollH.value=thetext.ci_mytext.scrollLeft;"^)
+
+
+
+
+
+
+
+
+if ci_readonly='TRUE' then
+ ci_readonly='ERROR'
+else
+ if ci_srch="SIMPLE" then
+  display '<input type=submit name=ci_button value="Save"'+a+'>' /display
+ else
+  display '<input type=submit name=ci_button value="Save"'+a+'>&nbsp;&nbsp;<input type="text" name="ci_searchtext"'+jscript('value="SEARCH" onfocus="if(this.value=='+"'SEARCH'"+') {this.value='+"''"+';}" onblur="if(this.value=='+"''"+') {this.value='+"'SEARCH'"+';}"')+'>'+
+
+jscript('<input type="button" name="ci_button" value="Find Next" onclick="searchArea(document.forms.thetext.ci_mytext,document.forms.thetext.ci_searchtext)">')+hscript('&nbsp;&nbsp;<input type="text" name="ciwid" size="3">x<input type="text" name="cihgt" size="3">') /display
+
+
+
+
+ /if
+ if ci_iscode<>'TRUE' then
+  if ci_wysiwyg="TRUE" then
+   display '&nbsp;<a href="'+page+'" name="ci_wysiwyg" value="'+not(ci_wysiwyg)+'">Edit Source</a>' /display
+  else
+   display '&nbsp;<a href="'+page+'" name="ci_wysiwyg" value="'+not(ci_wysiwyg)+'">Use Tiny MCE</a>' /display
+  /if
+ else
+
+
+
+  display '&nbsp;Line #<input type="text" name="lines" size="5">' /display
+ /if
+ display '&nbsp;<a href="edittextrestore.html" name="ci_textpath" value="'+ci_textpath+'">RESTORE</a>' /display
+/if
+if ci_message<>'ERROR' then display '&nbsp;&nbsp;'+ci_message /display ci_message="ERROR" /if
+display '
+</div>
+<div style="position: fixed; bottom: 2px; left: 2px;">
+' /display
+if jsc="TRUE" then 
+ display '<textarea name="ci_mytext" id="txtarea" ALLOWHTML ALLOWLINKS '+wrap+' style="border:0; height:400px; width:600px; margin:0;"></textarea>' /display
+
+else
+ display '<center><textarea name="ci_mytext" id="txtarea" ALLOWHTML ALLOWLINKS cols="'+ciwid+'" rows="'+cihgt+'" '+wrap+'></textarea></center>' /display
+/if
+display '
+</div>
+</form>
+</body>' /display
+ci_searchcount=''
+ci_button="ERROR"
+>>
+</html>
+<<overlay doit
+
+ ci_textpath=unencrypt(ci_textpath,'encrypt'+usernum)
+
+ HTMLOS.APPINPUT='ERROR'
+ if ci_searchtext="SEARCH" then ci_searchtext="" /if
+ if ci_button="Save" or ci_button="Save/Close" or ci_button="" or left(ci_button,7)="Replace" then
+  ci_path=fileinfo(ci_textpath) ci_path=ci_path[2]+"|"+ci_path[3]
+  ci_pathtable=ci_extract(ci_textpath)
+  copy file=ci_textpath to file=ci_pathtable[1]+ci_pathtable[6]+ci_pathtable[2]+ci_prefs[1,4]+"BAK"+ci_pathcounter+ci_pathtable[4] /copy
+  ci_pathcounter=ci_pathcounter-1
+  if ci_pathcounter<0 then ci_pathcounter=9 /if
+  COPY ci_mytext to FILE=ci_textpath /COPY
+  ci_temp=sysrm(ci_pathtable[1]+ci_pathtable[6]+ci_pathtable[2]+ci_prefs[1,4]+"BAK"+ci_pathcounter+ci_pathtable[4])
+  ci_message='LAST SAVE: '+now if ci_path<>ci_pathinfo then ci_message=ci_message+'<span class="red"> EXTERNAL CHANGES OVERWRITTEN</span>' /if
+ /if
+ if ci_button="Remove Search" then ci_button="ERROR" ci_searchtext="ERROR" /if
+ if count(ci_temp_path,ci_prefs[1,11])>0 then ci_message=ci_message+'<span class="Red">READ ONLY</span>' /if
+
+
+
+ if ci_textpath="/apps/imageservices/upload.cgi" then
+  # Clever little trick to update this on the web site /#
+  # Move upload.cgi /#
+  cmd='cp [private]/apps/imageservices/upload.cgi [script]'
+  cmd2=aliascommand(cmd)
+  shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+  # Set Permissions for script /#
+  cmd='chmod 755 [script]/upload.cgi'
+  cmd2=aliascommand(cmd)
+  shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1') 
+  # Set Permissions for upload directory /#
+  cmd='chmod 775 [public]/upload'
+  cmd2=aliascommand(cmd)
+  shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+  # List the directory when done /#
+  cmd='ls -al [script]/upload.cgi'
+  cmd2=aliascommand(cmd)
+  ci_message=ci_message+left(syscall('ImageServices Telnet',cmd2+' 2>&1'),10)
+ elif ci_textpath="/apps/imageservices/upload.cgi" then
+  ci_message=ci_message+'Changes not copied (unregistered)'
+ /if
+
+
+ if right(ci_textpath,3)=".pl" and ci_registered='TRUE' then
+  # Clever little trick to update this on the web site /#
+  # Move to cgi bin /#
+  fname= replace(reverse(chopright(reverse(ci_textpath),'/')),'/','')
+  cmd='cp [private]'+ci_textpath+' [script]'
+  cmd2=aliascommand(cmd)
+
+  shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+
+  cmd='chmod 755 [script]'+fname
+  cmd2=aliascommand(cmd)
+  shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1') 
+
+  cmd='ls -al [script]'+fname
+  cmd2=aliascommand(cmd)
+  ci_message=ci_message+left(syscall('ImageServices Telnet',cmd2+' 2>&1'),10)
+
+ elif right(ci_textpath,3)=".pl" then
+  ci_message=ci_message+'Changes not copied (unregistered)'
+ /if
+
+
+
+
+
+
+
+
+ goto page
+>>

@@ -1,0 +1,335 @@
+<<
+
+function ci_autofill(var,db,fieldlist,formatting,width) do
+ #
+ Formatting can look like any of the following...
+ "[1]<span class="informal"><br> <i>[2]</i></span>"
+ or
+ "[fielda]<span class="informal"><br> <i>[fieldb]</i></span>"
+ but you can't mix the two methods.
+ [1] will be the first field specified in fieldlist [2] the second and so on...
+
+ the span is extra information not placed in the field when a click occurs
+ /#
+ return ci_autofill_css(var)+^
+ <input id="^+var+^" name="^+var+^" size="^+floor(width/10)+^" style="width: ^+width+^px;" type="text">
+ <div class="^+var+^_css" id="^+var+^_auto_complete"></div>
+ <script type="text/javascript">
+  //<![CDATA[
+   var ^+var+^_auto_completer = new Ajax.Autocompleter('^+var+^', '^+var+^_auto_complete', '^+getlink('/system/clearimage/dbhandler.html',"autofillparams",var+"|"+db+"|"+fieldlist+"|"+formatting)+^', {});
+  //]]>
+ </script>
+ ^ /return
+/function
+
+
+function ci_autofill_css(var) do
+ return ^
+ <style type="text/css">
+  div.^+var+^_css {width: ^+width+^px; background: #fff;}
+  div.^+var+^_css ul {border:1px solid #888; margin:0; padding:0; width:100%; list-style-type:none;}
+  div.^+var+^_css ul li {margin:0; padding:3px; border-bottom: 1px solid #eee;}
+  div.^+var+^_css ul li.selected {background-color: #ffb;}
+  div.^+var+^_css ul strong.highlight {color: #800; margin:0; padding:0;}
+ </style>^+lf
+ /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+expand file="/system/clearimage/DLL.lib" /expand
+if isfile("/apps/clear/clear.js") then isAJAX="TRUE" else isAJAX='FALSE' /if
+
+function addlinkstols(cmd,shell) locals temp,x,text,file_name,addquote,tcmd do
+ if right(cmd,1)='"' then cmd=left(cmd,length(cmd)-1) addquote='"' else addquote='' /if
+ if right(cmd,1)='/' then else cmd=cmd+'/' /if
+ if left(cmd,7)='ls -al ' then
+  text='Links Added:'+lf
+  temp=split(shell,lf)
+  for name=temp rowname=x do
+   if left(x[1],4)='drwx' then
+    file_name=trim(reverse(chopright(reverse(x[1]),' ')))
+    if file_name='..' then
+     tcmd=reverse(chopleft(replace(reverse(cmd),'/',''),'/'))
+     text=text+'<a href="'+getlink('do_shell','cmd',tcmd+addquote)+'" AJAX>'+x[1]+'</a>'+lf
+    elif file_name='.' then
+     text=text+x[1]+lf
+    else
+     text=text+'<a href="'+getlink('do_shell','cmd',cmd+file_name+addquote)+'" AJAX>'+x[1]+'</a>'+lf
+    /if
+   else
+    text=text+x[1]+lf
+   /if
+  /for
+  return text /return
+ else
+  return shell /return
+ /if
+/function
+
+
+
+
+ #
+ Note Image Magick is usually found in /usr/local/bin
+ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local/bin:/usr/X11R6/bin:/root/bin
+ LS=../../../../bin/ls
+ /#
+
+
+
+copy file="telnetcmdhist.txt" to cmdhist /copy
+if cmd="ERROR" or cmd="" then 
+ cmd="ls -al /"
+/if
+
+
+if telnetcmd<>'' and telnetcmd<>'ERROR' then cmd=telnetcmd /if
+telnetcmd='ERROR'
+>>
+<html>
+<head>
+<title>Clear Image TELNET</title>
+<style>
+<!--
+BODY, TD, TH, INPUT, SELECT, TEXTAREA {font-family: Verdana,Arial,Helvetica,sans-serif;}
+BODY, TD, TH {font-size: 12px; color: #333333; padding: 5px;}
+BODY {background-color: #d9efdf; margin-left: 0cm; margin-right: 0cm; margin-top: 0cm; margin-bottom: 0cm;}
+PRE {font-size: 9pt; line-height: 9pt}
+INPUT, SELECT, TEXTAREA {font-size: 12px;}
+TABLE {empty-cells: show;}
+.head {background-color: #999999; font-weight: bold}
+.sub-head{background-color: #CCCCCC; font-weight: bold}
+.list {background-color: #EEEEEE;}
+.small {font-size: 10px; font-weight: normal;}
+.big, .medium {color: #999999;}
+.big {font-size: 26px;}
+.medium {font-size: 18px;}
+.bold {font-weight: bold}
+.error {color: #CC3333;}
+.footer {font-size: 8pt; font-family: Verdana,Arial,Helvetica,sans-serif; color: #666666}
+A:Visited, A:Active, A:Link {color: #003366; text-decoration: underline}
+A:Hover, A.headerlt:Hover, A.headerdk:Hover {color: #CC3333; text-decoration: underline}
+A:Link img {border: 0px;}
+A:Hover img {border: 1pt; border-color: #003366;}
+A.headerlt:Link, A.headerlt:Visited, A.headerlt:Active {color: #FFFFFF; text-decoration: none}
+A.headerdk:Link, A.headerdk:Visited, A.headerdk:Active {color: #000000; text-decoration: none}
+.help {font-size: 12px; font-weight: normal; color: #666666;}
+A.menu:Link, A.menu:Visited, A.menu:Active, A.menu:Hover {text-decoration: none}
+ #prefsouter    {position: absolute; top: 5px; left: 21px; width:400px; height: 300px; background-color: #ffffff; border: 1px solid #888888; z-index: 100;  display: none; padding: 0; margin: 0; overflow: none;}
+ #prefsmenu     {background-image:url('/apps/imageservices/images/dragbar.png'); position: relative; top: 0; left: 0; height: 15px; padding: 0; margin: 0; padding-left: 3px; padding-top: 3px; border-bottom: 1px solid #888888;}
+ #prefslist     {position: relative; top: 0; left: 0; width: 400px; height: 257px; background-color: #eeeeee; overflow: auto;}
+ #prefsbutton   {position: relative; top: 0; left: 0; height: 20px; padding: 0; margin: 0; padding-left: 3px; padding-top: 3px; background-color: #bbbbbb; border-top: 1px solid #888888;}
+ #prefslink     {position: absolute; top: 5px; left: 4px;}
+-->
+</style>
+  <script src="/apps/imageservices/jscripts/prototype161.js"></script>
+  <script src="/apps/imageservices/jscripts/scriptaculous.js"></script>
+  <script src="/apps/clear/clear.js"></script>
+  <script>
+   window.onload=function(){
+    new Draggable('prefsouter',{handle:'prefsmenu'});
+   }
+  </script>
+</head>
+<body>
+    <<if isajax<>"TRUE" then display 'Missing AJAX http://clearjs.org <a href="getajax">Install</a>' /display /if>>
+    <a href="help" AJAX name="ci_textpath" value="<<ci_textpath>>" id="prefslink">
+     <img src="/apps/imageservices/images/extras.png" width="16" height="16" border="0">
+    </a>
+    <div id="prefsouter">
+     <div id="prefsmenu"><a href="close" AJAX>x</a></div>
+     <div id="prefslist"><a href="'+getlink('restore')+'" AJAX>Open Snapshot Manager</a></div>
+     <div id="prefsbutton"><b>Preferences</b> <a href="close" AJAX>(x) Close</a></div>
+    </div>
+<div style="padding-left: 20px;">
+ <form type="submit" action="do_shell" accept-charset="utf-8" AJAX>
+  <input type="text" name="cmd" style="width: 80%;" id="cmd">
+  <input type="submit" name="mybutton" value="Run Shell command" style="width:15%;">&nbsp;<a href="<<page>>">(x)</a>
+ </form>
+</div>
+<pre id="output">
+<<shell>>
+</pre>
+</body>
+<<shell="">>
+</html>
+<<overlay do_shell
+if cmd='[install upload.cgi]' then
+
+ shell=''
+ cmd1=cmd
+ cmdhist=cmdhist+lf+cmd
+
+ # Move upload.cgi /#
+ cmd='cp [private]/apps/imageservices/upload.cgi [script]'
+ cmd2=aliascommand(cmd)
+ shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+
+ # Set Permissions for script /#
+ cmd='chmod 755 [script]/upload.cgi'
+ cmd2=aliascommand(cmd)
+ shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+
+ # Set Permissions for upload directory /#
+ cmd='chmod 775 [public]/upload'
+ cmd2=aliascommand(cmd)
+ shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+
+ # List the directory when done /#
+ cmd='ls -al [script]/upload.cgi'
+ cmd2=aliascommand(cmd)
+ shell=shell+lf+'Listing below verify permissions...'+lf+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+
+ cmd=cmd1
+
+elif cmd='loadgit' then
+
+ temp=sysls('/apps/bundlebee/bin/specs/')
+ temp3='ERROR'
+ temp2=destination+'<hr>'
+ for name=temp rowname=x do
+  if right(x[1],4)='.txt' then
+   copy file='/apps/bundlebee/bin/specs/'+x[1] ts=',' to temp1 /copy
+   if left(temp1[3,1],length(destination))=destination then
+    temp3='git add'
+    for name=temp1 rowname=y do
+     temp4=fileinfo(y[3])
+     if temp4[5,1]='PUBLIC' then
+      temp3=temp3+' public/'+replace(y[3],destination,'')
+     else
+      temp3=temp3+' '+replace(y[3],destination,'')
+     /if
+    /for
+   /if
+   temp2=temp2+temp1[3,1]+'<br>'
+  /if
+ /for
+
+ o=writeHTML('output','Load Git Eh!'+temp2+ci_table(temp3))
+ expand file=endOVERLAY() /expand
+
+
+else
+ cmdhist=cmdhist+lf+cmd
+ cmd2=aliascommand(cmd)
+ shell=cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+/if
+ copy cmdhist to file="telnetcmdhist.txt" /copy
+
+shell=addlinkstols(cmd,shell)
+
+ mybutton="ERROR"
+ div='ERROR'
+ o=writeHTML('output',cmd2+'<hr>'+shell)
+ o=runSCRIPT(^$('cmd').value='^+replaceall(cmd,"'","\'")+^';^)
+ expand file=endOVERLAY() /expand
+>>
+<<overlay help
+  cmd='cp [script]/htmlos.conf [private]/apps/imageservices/tmp/htmlos.conf'
+  cmd2=aliascommand(cmd)
+  shell=shell+cmd+lf+'---'+lf+syscall('ImageServices Telnet',cmd2+' 2>&1')
+  copy file="/apps/imageservices/tmp/htmlos.conf" to htmlos.conf /copy
+
+  directions=^
+   <div style="padding: 10px;">
+    Use the following shortcuts:<br>
+    [install upload.cgi] = install the upload with progress.<br>
+    [public]  = "^+aliascommand('[public]')+^"<br>
+    [private] = "^+aliascommand('[private]')+^"<br>
+    [script]  = "^+aliascommand('[script]')+^"<br>
+    [system]  = "^+aliascommand('[system]')+^" - If empty click system folder link<br>
+    These are the real paths to the Aestiva public/private/script areas.<hr>
+    <pre>htmlos.conf^+lf+^--------------^+lf+htmlos.conf+^</pre>
+   </div>^
+  o=writeHTML('prefsmenu',^<a href="^+getlink('close')+^" AJAX>x</a> Simple Telnet Client^)
+  o=writeHTML('prefslist',directions)
+  o=writeHTML('prefsbutton',ci_edit2(page,800,600,'Edit Telnet Source','TRUE'))
+  o=runSCRIPT(^$('prefsouter').style.display = "block";^)
+  expand file=endOVERLAY() /expand
+>>
+<<overlay close
+  o=runSCRIPT(^$('prefsouter').style.display = "none";^)
+  expand file=endOVERLAY() /expand
+>>
+<<overlay getajax
+ if domainname="clearjs.org" or isfile('/apps/clear/clear.js') then
+  goto page
+ else
+  thefile='/clearjs.bb'
+  temp=NETWEB('clearjs.org/apps/clear/clear.bb',50000000,600,'GET','','',thefile)
+  fpl=FILEPACKLIST(thefile)
+  fpl=getcoleq(fpl,1,'clear.js')
+  if fpl[1,1]="clear.js" then 
+   temp=fileunpack(thefile,'/apps/clear','')
+  else
+   message="Unexpected ERROR, Try manual update."
+  /if
+ /if
+ goto page
+>>

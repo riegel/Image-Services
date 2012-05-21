@@ -1,0 +1,21 @@
+<<
+if ci_approot="ERROR" then ci_approot="/apps/imageservices/" /if
+expand file=ci_approot+"getimage.lib" /expand
+expand file="filemanager.lib" /expand
+if fm_userdir='ERROR' then
+ fm_userdir=CLEARX_FMHOME
+ if fm_userdir='' or fm_userdir='ERROR' then fm_userdir=CLEAR_USER /if
+ if left(fm_userdir,1)<>'/' then fm_userdir=^/apps/imageservices/filemanager/users/^+fm_userdir /if
+ fm_permissions=CLEARX_FMACCESS
+/if
+if fm_userdir="ERROR" then goto "authenticate.html" /if
+if isfile(fm_userdir+^/welcome.html^) then goto fm_userdir+^/welcome.html^ /if
+# For the file manager to support multiple users simple identify the next two variables and start this page /#
+# fm_userdir="public"                       /#
+# fm_permissions="NNYYYYYYNYNNYYYY"         /#
+#                 1234567890123456          /#
+destination=fm_userdir+"/" # This is the chroot folder /#
+if isdir(destination) then else temp=movefolder("/apps/imageservices/filemanager/skel",destination) /if
+fm_chroot=destination
+goto "filemanager.html"
+>>

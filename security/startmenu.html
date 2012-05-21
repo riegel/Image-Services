@@ -1,0 +1,53 @@
+<<
+expand file="/system/clearimage/DLL.lib" /expand
+>>
+<html>
+<head>
+<title><<domainname>> Start Menu</title>
+<link rel="stylesheet" type="text/css" href="/apps/imageservices/filemanager/style.css" media="all">
+</head>
+<body style="background-color: #DDDDDD; padding: 50px;">
+<table>
+ <tr>
+  <td valign="top" bgcolor="#aaaaaa" style="width: 32px;"><div style="width:32px; height:32px; background-color: #bbbbbb"><<ci_img(ci_approot+'/security/photos/'+lower(clear_user),32,32,'FALSE')>></div></td>
+  <td>
+<h1><<clear_name>> (<<clear_user>>)</h1>
+<<
+
+temp=dbsearch('/apps/imageservices/security/clear_files','clear_instartmenu="y"',1,1000)
+if tagresults[5,1]=0 then
+ display ' Sorry No files in the menu at this time' /display
+else
+
+ temp1=split(clear_mygroups,' ')
+ display '<ul>' /display
+ for name=temp1 rowname=x do
+  a='ERROR'
+  b='ERROR'
+  for name=temp rowname=y do
+   if y[10]=x[1] then
+    if a='ERROR' then a=x /if
+    if b='ERROR' then b=y else b=append(b,y) /if
+   /if
+  /for
+  if a='ERROR' then
+
+  elif rows(b)=1 then
+    display '<li><b>'+a[1,1]+'</b> <i>(<a href="'+b[8,1]+'">'+replaceall(replace(replace(b[2,1],'.html',''),'.htm',''),'_',' ')+'</a>)</i></li>' /display
+  else
+    display '<li><b>'+a[1,1]+'</b></li><ul>' /display
+   for name=b rowname=y do
+    display '<li><a href="'+y[8]+'">'+replaceall(replace(replace(y[2],'.html',''),'.htm',''),'_',' ')+'</a></li>' /display
+   /for
+    display '</ul>' /display
+  /if
+ /for
+
+ display '</ul>' /display
+/if
+>>
+  </td>
+ </tr>
+</table>
+</body>
+</html>

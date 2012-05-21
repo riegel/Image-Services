@@ -1,0 +1,27 @@
+<script type="text/javascript" language="JavaScript"><!--
+function HideContent(d) {
+if(d.length < 1) { return; }
+document.getElementById(d).style.display = "none";
+}
+function ShowContent(d) {
+if(d.length < 1) { return; }
+document.getElementById(d).style.display = "block";
+}
+function ReverseContentDisplay(d) {
+if(d.length < 1) { return; }
+if(document.getElementById(d).style.display == "none") { document.getElementById(d).style.display = "block"; }
+else { document.getElementById(d).style.display = "none"; }
+}
+//--></script>
+<div>Help <a href="javascript:ReverseContentDisplay('help');">(show/hide)</a></div>
+<div id="help" style="display: none;">
+<strong>File Manager with Integrated Security Clearance Manager</strong>
+<table><tr><td align="left" bgcolor="#EEEEEE">
+<ol>
+<li>To select/deselect multiple items click once on each item.</li>
+<li>To review information about the files/folders selected click get info button.</li>
+<li>Click Upload to add files from your computer.</li>
+<li>New File will create a placeholder for a file. Name it then edit or upload it.</li>
+</ol>
+</td></tr></table>
+</div>

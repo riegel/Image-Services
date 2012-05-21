@@ -1,0 +1,15 @@
+<<
+expand file="/system/clearimage/DLL.lib" /expand
+
+temp=ajax_setvars('desc ipath bindata')
+ipath=unpostprep(unencrypt(ipath,usernum))
+if desc<>'ERROR' and desc<>'' then
+ test=ci_getmeta(ipath)
+ test[5]=desc
+ test=ci_putmeta(ipath,test)
+/if
+temp=b64Decode(bindata)
+temp=texttobin(temp,ipath)
+temp=ci_rmtemp(ipath)
+temp=webpush('Success','text/html')
+>>

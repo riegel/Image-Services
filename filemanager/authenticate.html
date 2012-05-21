@@ -1,0 +1,54 @@
+<<
+#
+echo myftppassword | ftpasswd --passwd --name=riegel --uid=1004 --gid=1004 --home=/home/clearimageonline/html/apps/imageservices/filemanager/users/riegel/ --shell=/bin/sh --stdin --file=/usr/local/etc/ftppasswd
+chmod 744 /usr/local/etc/ftppasswd
+then I just added this to the proftpd.conf file
+AuthUserFile /usr/local/etc/ftppasswd
+It all can be run from the script. There is no mechanism for removing a user that I see, but there is an option to dump the file before writing to it. So to delete a user I could just erase and rewrite the file for all the remaining users.
+/#
+>>
+<html>
+<head>
+ <title>File Manager Login</title>
+<<fm_style>>
+</head>
+<body bgcolor="#eeeeee">
+<table width="100%" height="100%">
+ <tr>
+  <td align="center" valign="center" width="50%">
+   <table cellpadding="5" cellspacing="5" style="border: 1px solid #cccccc;" bgcolor="#ffffff">
+   <<if message<>"ERROR" then display '<tr><td>'+message+'</td></tr>' /display message="ERROR" /if>>
+   <form action="verify" accept-charset="utf-8">
+   <tr><td>
+   <font size="+2" color="#888888"><b>W</b></font>elcome to File Mangager<br>
+   Type your email address and click "Begin".<br>
+   A session will be created for you to test the program.
+   </td></tr>
+   <tr><td>
+   <hr>
+   </td></tr>
+   <tr><td align="center">
+   EMAIL:<input type="text" name="betasession" size="30"><input type="submit" name="mybutton" value="Begin">
+   </form>
+   </td></tr></table>
+  </td>
+ </tr>
+</table>
+</body>
+</html>
+<<overlay verify
+copy file="users.csv" ts="," to ver /copy
+a=getcoleq(ver,1,betasession)
+if a<>"ERROR" and a<>"" then
+ fm_userdir=a[2] fm_permissions=a[3] if fm_permissions="" or fm_permissions="ERROR" or length(fm_permissions)<>16 then fm_permissions="NNYYYYYYNYNNYYYY" /if
+ if isdir('/apps/imageservices/filemanager/users/'+fm_userdir) then else temp=movefolder("skel",'/apps/imageservices/filemanager/users/'+fm_userdir) /if
+ # Add FTP access /#
+ temp='echo '+a[4]+' | /usr/home/clearimageonline/bin/ftpasswd --passwd --name='+a[2]+' --uid=1004 --gid=1004 --home=/home/clearimageonline/html/apps/imageservices/filemanager/users/'+a[2]+'/ --shell=/bin/sh --stdin --file=/usr/local/etc/ftppasswd 2>&1'
+ ftpuser=system(temp)+system('chmod 744 /usr/local/etc/ftppasswd')
+ goto "entry.html"
+else
+ a=netmail(betasession,"riegel@clearimageonline.com","ACCESS to FileManager","Click to modify access list. Attempt made by ["+betasession+"] "+lf+"Grant Access Link: "+getlink(ci_approot+"edittable.html","ci_programparams","users.csv|||900|650|TRUE"),"40","")
+ message='<div style="color: red; font-size: 16px;">Your email address was not found in the Beta testers list.<br>An email has been sent to me, when I get it I will set you up for access.</div><hr>'
+ goto page
+/if
+>>

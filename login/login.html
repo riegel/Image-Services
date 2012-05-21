@@ -1,0 +1,354 @@
+<<
+route_cookie='FALSE'
+
+# Scroll past "function login()" and "function buildlogin()" to see this pages logic /#
+
+function ci_login() locals cidemo,x,temp1,temp,t,text,pw,y,aa,sound,clear_users.conf do
+  temp=ci_cookieread('PERSIST')
+  if temp<>'ERROR' then
+   temp=split(unencrypt(temp,'ue>tagbl'),'|')
+   if htmlos_login_user="ERROR" or htmlos_login_user="" then
+    htmlos_login_user=temp[1,1]
+    rndmsg='rand'
+    htmlos_login_password=temp[1,2]+rndmsg
+    htmlos_login_source='COOKIE'
+    htmlos_login_permanent='1'
+   /if
+  /if
+  y='ERROR'
+  if htmlos_login_user='admin' and right(htmlos_login_password,4)=rndmsg then
+   y='TRUE'
+   clear_user=htmlos_login_user
+   clear_user_SHADOW=htmlos_login_user
+   clearx_startpage='/system/desktop/index.html'
+   clearx_startpage_SHADOW='/system/desktop/index.html'
+   clear_groups=dbsearch(ci_approot+'/security/clear_groups','CLEAR_USER="ADMIN"',1,1000)
+   clear_mygroups=''
+   clear_name=htmlos_login_user
+   for name=clear_groups rowname=x do
+    clear_mygroups=clear_mygroups+x[2]+' '
+   /for
+   clear_mygroups_SHADOW=clear_mygroups
+   htmlos_login_user='admin'
+   loginpage='/system/aestivalogin.html'
+  else
+   if isfile('/apps/imageservices/security/clear_users.db') then
+    pw=dbsearch(ci_approot+'/security/clear_users',"clear_user~''",1,1000)
+    for name=pw rowname=x do
+     if x[2]='admin' then x[4]=left(htmlos_login_password,length(htmlos_login_password)-4) /if
+     if htmlos_login_password=x[4]+rndmsg and htmlos_login_user=x[2] then
+      htmlos_login_password=x[4]
+      copy file=ci_approot+'/security/clear_users.conf' ts=',' to clear_users.conf /copy
+      for name=clear_users.conf rownum=y do
+       temp=indirectionset(clear_users.conf[1,y],x[y+1,1])
+       temp=indirectionset(clear_users.conf[1,y]+'_SHADOW',x[y+1,1])
+      /for
+      iconpage='ERROR'
+      if isfile('/apps/imageservices/startup.html') then
+       loginpage='/apps/imageservices/startup.html'
+      else
+       if clearx_startpage='' or clearx_startpage='ERROR' then
+        loginpage="/apps/imageservices/security/startmenu.html"
+       else
+        loginpage=clearx_startpage
+       /if
+      /if
+      y='TRUE'
+     /if
+    /for
+   /if
+  /if
+  if y='TRUE' then
+   temp=ci_cookiewrite('CLEAR_USER',clear_user,adddays(now,14))
+   temp=samelogin('TRUE')
+   if htmlos_login_user='admin' then htmlos_login_password=left(htmlos_login_password,length(htmlos_login_password)-4) /if
+   if htmlos_login_permanent=1 then
+    temp=ci_cookiewrite('PERSIST',encrypt(htmlos_login_user+'|'+htmlos_login_password,'ue>tagbl'),adddays(now,365))
+   /if
+   rndmsg='ERROR'
+   temp=ci_rmimage(ci_approot+"tmp/verify"+usernum+".jpg")
+   return 'LOGINSUCCESS' /return
+  else
+   if firstlook="ERROR" then firstlook="" else message="Login Failure" /if
+   iconpage='ERROR'
+   htmlos_login_password="ERROR"
+   temp=ci_rmimage(ci_approot+"tmp/verify"+usernum+".jpg")
+   return 'LOGINFAILURE' /return
+  /if
+/function
+
+
+
+function ci_buildlogin() locals cidemo,x,temp1,temp,t,text,pw,y,aa,sound,clear_users.conf,tf do
+  if htmlos_login_user='ERROR' then
+   htmlos_login_user=ci_cookieread('CLEAR_USER')
+  /if
+  ci_demo=filelist(ci_approot+"tmp/")
+  for name=ci_demo rowname=x do
+   if adddays(left(x[3],8),0)=today or adddays(left(x[3],8),0)=yesterday then else
+    if x[1]<>"is.gif" then temp1=ci_rmimage(ci_approot+"tmp/"+x[1]) /if
+   /if
+  /for
+  if not(isfile("/apps/imageservices/loginrequired.jpg")) then
+   temp=ci_rmimage("/apps/imageservices/loginrequired.jpg")
+   temp=ci_cpfile("/apps/imageservices/images/loginrequired.gif","/apps/imageservices/loginrequired.jpg")
+   aa='OVERWRITE-font '+ci_getpath('/apps/imageservices/fonts/MACHINE_.TTF')+' -pointsize 30 -fill "#ffffff" '+
+      '-draw "gravity center text 1,-85 '+"'"+domainname+"'"+'" '
+   x=ci_img2("/apps/imageservices/loginrequired.jpg","","","FALSE","","convert",aa)
+  /if
+  rndmsg="X"
+  a=random(1,31) if a<9 then a=a+49 elif a<20 then a=a+88 elif a<22 then a=a+89 else a=a+90 /if
+  rndmsg=rndmsg+ascii(a)
+  a=random(1,31) if a<9 then a=a+49 elif a<20 then a=a+88 elif a<22 then a=a+89 else a=a+90 /if
+  rndmsg=rndmsg+ascii(a)
+  a=random(1,31) if a<9 then a=a+49 elif a<20 then a=a+88 elif a<22 then a=a+89 else a=a+90 /if
+  rndmsg=rndmsg+ascii(a)
+  a=random(1,31) if a<9 then a=a+49 elif a<20 then a=a+88 elif a<22 then a=a+89 else a=a+90 /if
+  rndmsg=rndmsg+ascii(a)
+  rndmsg=right(rndmsg,4)
+  temp=syscall('Make Sound','sox '+
+   ci_getpath('/apps/imageservices/jscripts/audio/sounds/'+middle(rndmsg,1,1))+' '+
+   ci_getpath('/apps/imageservices/jscripts/audio/sounds/'+middle(rndmsg,2,2))+' '+
+   ci_getpath('/apps/imageservices/jscripts/audio/sounds/'+middle(rndmsg,3,3))+' '+
+   ci_getpath('/apps/imageservices/jscripts/audio/sounds/'+middle(rndmsg,4,4))+' '+
+   ci_getpath(ci_approot+"tmp/verify"+usernum+".mp3"))
+  sound=isfile(ci_approot+"tmp/verify"+usernum+".mp3")
+  if sound then
+   if not(isfile(ci_approot+"tmp/verify"+usernum+".jpg")) then temp=ci_cpfile(ci_approot+"images/listenverify.jpg",ci_approot+"tmp/verify"+usernum+".jpg") /if
+  else
+   if not(isfile(ci_approot+"tmp/verify"+usernum+".jpg")) then temp=ci_cpfile(ci_approot+"images/verify.jpg",ci_approot+"tmp/verify"+usernum+".jpg") /if
+  /if
+  aa=ci_randomimage(rndmsg)
+  temp="ERROR" temp1="ERROR" x="ERROR"
+  text='
+  <html>
+   <head>
+    <META HTTP-EQUIV="PRAGMA" Content="no-cache">
+    <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="no-cache">
+    <title>Aestiva/Image Services Desktop Login</title>'
+  if sound then text=text+'
+    <script type="text/javascript" src="/apps/imageservices/jscripts/audio/soundmanager2.js"></script>'
+  /if
+  text=text+^
+    <style type="text/css">
+    <!--
+    body, p, table, td        {font: 12px Verdana, Arial, Helvetica, sans-serif; margin: 0; padding: 0;}
+    .red {color: red;}
+    DIV.outer
+      {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 530px;
+      height: 400px;
+      margin-left: -265px; /* half of width */
+      margin-top: -200px;  /* half of height */
+      }
+    DIV.inner
+      {
+      position:absolute;
+      left: 50%;
+      top :50%;
+      width: 490px;
+      height: 230px;
+      margin-left: -245px;  /* half of width */
+      margin-top: -60px;   /* half of height */
+      }
+    -->
+    </style>
+    <script>
+     window.onload = jsinit;
+     function jsinit() {^+lf
+
+  if htmlos_login_user='ERROR' or htmlos_login_user='' then
+   text=text+'if(window.focus!=null){window.focus();} document.desktop_login.htmlos_login_user.focus();'+lf
+  else
+   text=text+'if(window.focus!=null){window.focus();} document.desktop_login.htmlos_login_password.focus();'+lf
+  /if
+text=text+^
+      document.getElementsByTagName('center')[document.getElementsByTagName('center').length-1].parentNode.removeChild(document.getElementsByTagName('center')[document.getElementsByTagName('center').length-1]);
+     }
+    </script>
+  </head>^
+  text=text+'
+   <body>
+    <div class="outer">
+     '+ci_img('/apps/imageservices/loginrequired.jpg','','','FALSE')+' 
+      <div class="inner">
+<center>
+ <form method=post action="dologin" name="desktop_login" id="desktop_login" accept-charset="utf-8">
+  <input type="hidden" name="htmlos_login_source" value="INTERACTIVE">
+  <input type="hidden" name="submitlogin" value="TRUE">
+  <input type="hidden" name="ajaxrequest" id="ajaxrequest" value="FALSE">
+Aestiva HTML/OS '+version+'<br>
+Image Services '+ci_version()+'<br>'
+  if message<>"ERROR" and message<>"" then
+   text=text+'<div class="red">'+message+unpostprep(getenv('QUERY_STRING'))+'</div>'
+  else
+   text=text+'<div class="red">&nbsp;'+unpostprep(getenv('QUERY_STRING'))+'</div>'
+  /if
+  message='ERROR'
+ if ci_prefs[1,28]='USERNAME' then
+  text=text+'<table cellspacing="3">'
+  if isfile('/apps/imageservices/security/clear_users.db') then
+   pw=dbsearch(ci_approot+'/security/clear_users',"clear_user~''",1,1000)
+   t=''
+   for name=pw rowname=x do
+    if htmlos_login_user=x[2] then t=x[3] /if
+   /for
+   if t<>'' then
+    text=text+'<tr><td align="right">User Name&nbsp;&nbsp;</td><td>'+t+'<input type="hidden" name="htmlos_login_user">&nbsp;<i><a href="'+page+'" name="htmlos_login_user" value="">(change)</a></i></td></tr>'
+   else
+    text=text+'<tr><td align="right">User Name&nbsp;&nbsp;</td><td><input type="text" name="htmlos_login_user" style="width: 150px;"></td></tr>'
+   /if
+  else
+   htmlos_login_user='admin'
+  /if
+  text=text+'<tr><td align="right">Password+ImageCode&nbsp;&nbsp;</td><td><input type="password" name="htmlos_login_password" size="30" style="width: 150px;"></td></tr>'
+  if sound then
+   text=text+'<tr><td align="right">ImageCode&nbsp;</td><td>'+replace(aa[1],'>',' onclick="javascript:soundManager.play('+"'"+'mySound'+"'"+','+"'"+ci_approot+'tmp/verify'+usernum+'.mp3'+"'"+');">')+'</td></tr>'
+  else
+   text=text+'<tr><td align="right">ImageCode&nbsp;</td><td>'+aa[1]+'</td></tr>'
+  /if
+  text=text+'<tr><td align="right">Permanent&nbsp;&nbsp;</td><td><input type="checkbox" name="htmlos_login_permanent" value="1"></td></tr>'
+  text=text+'<tr><td></td><td align="center"><input type="image" src="/apps/imageservices/images/lock.gif" width="114" height="33" name="desktoplogin" border="0"></td></tr></table>'
+ else
+  text=text+'ENTER PASSWORD AND IMAGE CODE:<br>'
+  if isfile('/apps/imageservices/security/clear_users.db') then
+   pw=dbsearch(ci_approot+'/security/clear_users',"clear_user~''",1,1000)
+   t='<option value="admin">Administrator</option>'
+   temp=''
+   for name=pw rowname=x do
+    if x[2]='admin' then t='' /if
+    temp=temp+'<option value="'+x[2]+'">'+x[3]+'</option>'
+   /for
+   text=text+'<select name="htmlos_login_user" size="1" style="width: 150px;">'+t+temp+'</select><br>'
+  else
+   htmlos_login_user='admin'
+  /if
+  text=text+'<input type="password" name="htmlos_login_password" size="30" style="width: 150px;"><br>'
+  if sound then
+   text=text+replace(aa[1],'>',' onclick="javascript:soundManager.play('+"'"+'mySound'+"'"+','+"'"+ci_approot+'tmp/verify'+usernum+'.mp3'+"'"+');">')+'<br>'
+  else
+   text=text+aa[1]
+  /if
+  text=text+'<div style="width: 150px;">Permanent&nbsp;&nbsp;<input type="checkbox" name="htmlos_login_permanent" value="1"></div>'
+  text=text+'<br><input type="image" src="/apps/imageservices/images/lock.gif" width="114" height="33" name="desktoplogin" border="0"><br>'
+ /if
+# onclick="return doajax();" /#
+  text=text+'
+  </form>
+</center>
+      </div>
+    </div>'
+  if sound then text=text+'
+   <script type="text/javascript">soundManager.createMovie('+"'"+'/apps/imageservices/jscripts/audio/soundmanager.swf'+"'"+');</script>'
+  /if
+  text=text+'
+  </body><center></center>
+ </html>'
+ submitlogin='ERROR'
+ return text /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ # START DETERMINE IS_ci_login /#
+   expand file="/system/clearimage/DLL.lib" /expand
+   if IS_ci_login="ERROR" then if ci_prefs[1,26]=1 then IS_ci_login="TRUE" else IS_ci_login="FALSE" /if /if
+   temp=ajax_setvars('aestivalogin')
+   if aestivalogin="TRUE" then
+    IS_ci_login="FALSE"
+   else
+    temp=syscall('000','ls')
+    if temp='DISABLED' then IS_ci_login="FALSE" /if
+   /if
+ # END   DETERMINE IS_ci_login /#
+
+ if IS_ci_login="FALSE" then
+  goto '/system/aestivalogin.html'
+ else
+
+  # Call ci_login() to determine if we can autologin /#
+  temp=ci_login()
+  if temp='LOGINSUCCESS' and getenv('QUERY_STRING')='' then
+   goto "/apps/imageservices/login/persistentframe.html"
+  /if
+
+ /if
+>>
+<<
+ # no autologin so we present the login page /#
+   if firstrun='ERROR' then message='ERROR' firstrun='' /if
+   temp=ci_buildlogin()
+   display temp /display
+>>
+<<overlay dologin
+  temp=ci_login()
+  if temp='LOGINSUCCESS' then
+   goto "/apps/imageservices/login/persistentframe.html"
+  /if
+  goto page
+>>

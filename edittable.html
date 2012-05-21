@@ -1,0 +1,476 @@
+<<
+expand file="edittable.lib" /expand
+
+
+
+
+
+
+function checkglobals() do
+ if ci_programparams<>"ERROR" then
+  ci_temp=listtorow(ci_programparams,"|")
+  ci_savetextpath=ci_textpath
+  ci_textpath=ci_temp[1]  
+  ci_searchtext=ci_temp[2]
+  ci_return=ci_temp[3]
+  ciwid=ci_temp[4]+2
+  cihgt=ci_temp[5]-19
+  ci_permissions="YYYYYYYYYYYYYYYY" 
+  pagesize=10 pageindex=1
+  onloadcode=""
+  wid=20 hgt=1
+  mode=1
+  ci_programparams="ERROR"
+  copy file=ci_textpath ts="," to table /copy
+  x="ERROR" y="ERROR" z="ERROR"
+ /if
+ return "" /return
+/function
+
+
+
+function ci_checkcommand() do 
+ if cicmd<>"ERROR" then
+  temp=listtorow(cicmd,"|")
+  ci_textpath=temp[1]
+  cicmd=temp[2]
+  if cicmd="CHOOSE" or cicmd="CHOOSE1" then
+   if cicmd="CHOOSE" then
+    if x=temp[3] then x="ERROR" else x=temp[3] /if
+    if y=temp[4] then y="ERROR" else y=temp[4] /if
+   else
+    x=temp[3] y=temp[4]
+   /if
+   z=temp[5]
+   if z="ERROR" and (isinteger(y) or isinteger(x)) then cicmd="PICK" else cicmd="ERROR" mode=2 /if
+  elif cicmd="EDIT" then
+   if isinteger(temp[4]) then
+    x="ERROR"
+    y=temp[4]
+    z=temp[5]
+   else
+    cicmd="ERROR"
+   /if
+  elif cicmd="MODE" then
+   mode=temp[3]
+   cicmd="ERROR"
+  elif cicmd="PAGESIZE" then
+   pagesize=temp[3]
+   cicmd="ERROR"
+  elif cicmd="PAGE" then
+   pageindex=temp[3]
+   if (y>pageindex+pagesize or y<pageindex) and x="ERROR" then mode=1 y="ERROR" /if
+   cicmd="ERROR"
+  elif cicmd="DIM" then
+   wid=temp[3]
+   hgt=temp[4]
+   cicmd="ERROR"
+  /if
+ /if
+ return "ERROR" /return
+/function
+
+
+
+
+function worktable() do
+ if ci_button="btn_first" then
+  y=1
+ elif ci_button="btn_prev" then
+  y=y-1 if y<1 then y=1 /if
+ elif ci_button="btn_next" then
+  if y_go=y then
+   y=y+1
+   if y>rows(table) then
+    if auth(3)=1 then
+     table=insrows(table,rows(table)+1,1)
+    else
+     y=y-1
+    /if
+   /if
+  else
+   y=y_go if y<1 then y=1 /if if y>h then y=h /if
+  /if
+ elif ci_button="btn_last" then
+  y=h
+ /if
+
+
+
+ if r="ERROR" then
+  if z=2 and y="ERROR" then table=sortcol(table,x) r="" /if
+  if z=2 and x="ERROR" then table=sortrow(table,y) r="" /if
+  if z=3 and y="ERROR" then table=sortcoln(table,x) r="" /if
+  if z=3 and x="ERROR" then table=sortrown(table,y) r="" /if
+  if z=4 and y="ERROR" then table=sortcold(table,x) r="" /if
+  if z=4 and x="ERROR" then table=sortrowd(table,y) r="" /if
+ else
+  if z=2 and y="ERROR" then table=reversesortcol(table,x) r="ERROR" /if
+  if z=2 and x="ERROR" then table=reversesortrow(table,y) r="ERROR" /if
+  if z=3 and y="ERROR" then table=reversesortcoln(table,x) r="ERROR" /if
+  if z=3 and x="ERROR" then table=reversesortrown(table,y) r="ERROR" /if
+  if z=4 and y="ERROR" then table=reversesortcold(table,x) r="ERROR" /if
+  if z=4 and x="ERROR" then table=reversesortrowd(table,y) r="ERROR" /if
+ /if
+
+ if z=5 and y="ERROR" then
+  ad=inscols(ad,x,1)
+  ci_temp=adtomd()
+  table=inscols(table,x,1)
+ /if
+ if z=5 and x="ERROR" then table=insrows(table,y,1) /if
+
+ if z=6 and y="ERROR" then
+  ad=inscols(ad,x+1,1)
+  ci_temp=adtomd()
+  table=inscols(table,x+1,1)
+ /if
+ if z=6 and x="ERROR" then table=insrows(table,y+1,1) /if
+
+ if z=7 and y="ERROR" and x<>1 then
+  ad=switchcols(ad,x,x-1)
+  ci_temp=adtomd()
+  table=switchcols(table,x,x-1)
+  x=x-1
+ /if
+ if z=7 and x="ERROR" and y<>1 then table=switchrows(table,y,y-1) y=y-1 /if
+
+ if z=8 and y="ERROR" then
+  if x>=cols(table) then
+  else
+   ad=switchcols(ad,x,x+1)
+   ci_temp=adtomd()
+   table=switchcols(table,x,x+1)
+   x=x+1
+  /if
+ /if
+ if z=8 and x="ERROR" then if y>=rows(table) then else table=switchrows(table,y,y+1) y=y+1 /if /if
+
+ if z=9 and y="ERROR" then
+  ad=switchcols(ad,x,1)
+  ci_temp=adtomd()
+  table=switchcols(table,x,1)
+  x=1
+ /if
+ if z=9 and x="ERROR" then table=switchrows(table,y,1) y=1 /if
+
+ if z=10 and y="ERROR" then
+  ad=switchcols(ad,x,cols(table))
+  ci_temp=adtomd()
+  table=switchcols(table,x,cols(table))
+  x=cols(table)
+ /if
+
+ if z=10 and x="ERROR" then table=switchrows(table,y,rows(table)) y=rows(table) /if
+
+ if z=11 and y="ERROR" then
+  ad=delcol(ad,x)
+  ci_temp=adtomd()
+  table=delcol(table,x)
+  if x>cols(table) then x=cols(table) /if
+ /if
+ if z=11 and x="ERROR" then table=delrow(table,y) if y>rows(table) then y=rows(table) /if /if
+
+ if z=12 then z="ERROR" /if
+
+ z="ERROR"
+ return "" /return
+/function
+
+
+
+
+
+#
+
+function auth() locals a do
+ a=middle(ci_permissions,pos,pos)
+ if a="Y" then
+  a=1
+ else
+  a=0
+ /if
+ return a /return
+/function
+/#
+
+
+function navigate() locals text do
+text='
+<input type=submit name=ci_button value="Save">&nbsp;&nbsp;
+<b>Record&nbsp;&nbsp;&nbsp;
+<input type="image" border="0" name=btn_none src="/apps/imageservices/images/pixel.gif" Alt="">
+<input type="image" border="0" name=btn_first src="/apps/imageservices/images/first.gif" width=12 height=12 Alt="">
+<input type="image" border="0" name=btn_prev src="/apps/imageservices/images/prev.gif" width=12 height=12 Alt="">
+<input type="text" size="4" name="y_go">
+<input type="image" border="0" name=btn_next src="/apps/imageservices/images/next.gif" width=12 height=12 Alt="">
+<input type="image" border="0" name=btn_last src="/apps/imageservices/images/last.gif" width=12 height=12 Alt="">
+&nbsp;&nbsp;&nbsp;to&nbsp;'+h1+'&nbsp;of&nbsp;'+h+'</b>
+'
+return text /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if isinteger(pageindex) then else pageindex=1 /if
+ci_temp=checkglobals() # ci_programparams code is here /#
+ci_temp=checkcommand() # if a command was issued check it here /#
+if ci_textpath="ERROR" then goto "ERROR.html" /if
+ci_temp=worktable() # add/delete/insert/swap rows/columns /#
+# Auto Save Feature /#
+if table<>"" and table<>"ERROR" and auth(1)=1 then copy table to file=ci_textpath ts="," /copy ci_message='LAST SAVE: '+now /if
+if auth(1)=0 then mode=1
+ copy file=ci_textpath ts="," to table /copy
+/if
+
+ # now get meta data /#
+ xx=ci_extract(ci_textpath)
+ if count(xx[3],ci_prefs[1,4])=1 then
+  csid=xx[1]+xx[6]+xx[2]+xx[3]+xx[4]+".csid"
+ else
+  csid=xx[1]+xx[6]+xx[2]+ci_prefs[1,4]+xx[3]+xx[4]+".csid"
+ /if
+ if isfile(csid) then temp=ci_cpfile(csid,xx[1]+xx[2]+".id") temp=ci_rmfile(csid) /if
+ csid=xx[1]+xx[2]+".id"
+ if isfile(csid) then
+  copy file=csid ts="," to md /copy
+  for name=xx value=1 to cols(table) do
+   if md[xx]="ERROR" or md[xx]="" or not(isinteger(replace(chopright(md[xx],"|"),"|",""))) then md[xx]="10|1|ERROR|ERROR" # Width|Height|Help|CheckCode /# /if
+  /for
+  if length(md[1,2])=16 then ci_permissions=md[1,2] /if
+  show=md[2,2]
+  if isinteger(md[3,2]) then pagesize=md[3,2] /if
+ else
+  md="ERROR"
+  for name=xx value=1 to cols(table) do
+   md[xx]="10|1|ERROR|ERROR" # Width|Height|Help|CheckCode /#
+  /for
+  md[1,2]=ci_permissions
+  md[2,2]=show
+  md[3,2]=pagesize
+  copy md to file=csid ts="," /copy
+ /if
+ for name=xx value=1 to cols(md) do
+  a=listtorow(md[xx],"|")
+  ad[xx,1]=a[1]
+  ad[xx,2]=a[2]
+  ad[xx,3]=a[3]
+  ad[xx,4]=a[4]
+  if length(md[1,2])=16 then ci_permissions=md[1,2] /if
+  show=md[2,2]
+  if isinteger(md[3,2]) then pagesize=md[3,2] /if
+ /for
+# End Auto Save feature /#
+
+# Pagesize stuff /#
+w=cols(table)
+h=rows(table)
+ci_temp=checkpage()
+if isinteger(y) and y<>"ERROR" then
+ if y>h1 then pageindex=pageindex+(y-h1) ci_temp=checkpage() /if
+ if y<pageindex then pageindex=y ci_temp=checkpage() /if
+/if
+# End Pagesize stuff /#
+>>
+<html>
+<<head>>
+<<
+ol=0 onloadcode=""
+if cicmd="ERROR" then
+ ci_temp=grid()
+ if x="ERROR" and y<>"ERROR" then ci_temp=ci_temp+'<input type="image" border="0" name=btn_next src="/apps/imageservices/images/pixel.gif" Alt="">' /if
+ y_go=y if y_go="ERROR" then y_go=pageindex /if
+ ci_temp=ci_temp+navigate()
+ ci_temp=ci_temp+'&nbsp;&nbsp;&nbsp;&nbsp;'+done()+'&nbsp;&nbsp;&nbsp;&nbsp;'+prefs()
+ ci_temp=form(ci_temp)
+elif cicmd="SEARCH" then
+ ci_temp='<input type=text name=ci_searchtext value=""><input type=submit name=ci_button value="Search">'
+ ci_temp=form(ci_temp)
+ ci_temp=centeronpage(ci_temp)
+elif cicmd="EDIT" then
+ y_go=y
+ ci_temp='<input type="hidden" name="cicmd" value="'+ci_textpath+'|EDIT|ERROR|'+y+'|ERROR"><table><tr><td colspan=2>'+navigate()+'</td>'
+
+ if auth(5)=1 then ci_temp=ci_temp+"<td><div id=cbttn><a href="+page+" name=cicmd value="+ci_textpath+"|EDIT|ERROR|"+y+"|11><img src=/apps/imageservices/images/trash.gif border=0 width=12 height=12></a></div></td>" else ci_temp=ci_temp+"<td></td>" /if
+ ci_temp=ci_temp+'</tr><tr><td colspan=3><hr></td></tr>'
+ for name=xx value=1 to w do
+  if isinteger(ad[xx,1]) then wt=ad[xx,1] else wt=wid /if
+  if isinteger(ad[xx,2]) then ht=ad[xx,2] else ht=hgt /if
+  if ad[xx,3]<>"ERROR" then d=ad[xx,3]+" " else d="" /if
+  if ht=1 then
+   a='<input type=text size="60" name="table['+xx+','+y+']" style="border:0; width:100%; margin:0px">'+lf
+  else
+   a='<textarea rows="'+ht+'" cols="60" name="table['+xx+','+y+']" style="border:0; width:100%; margin:0px"></textarea>'+lf
+  /if
+  ci_temp=ci_temp+'<tr><td valign=top align=right bgcolor=#aaaaaa>'+d+'</td><td valign=top align=center bgcolor=#eeeeee>'+a+'</td><td valign=top align=left bgcolor=#eeeeee>'+xx+'</td></tr>'+lf
+ /for
+ ci_temp=ci_temp+"</table>"+lf
+ ci_temp=ci_temp+'<input type="image" border="0" name=btn_next src="/apps/imageservices/images/pixel.gif" Alt="">'
+ ci_temp=ci_temp+'<p><a href="'+page+'" name=cicmd value="'+ci_textpath+'|ERROR|ERROR|ERROR|ERROR">[RETURN]</a></p>'+lf
+ ci_temp=form(ci_temp)
+ ci_temp=centeronpage(ci_temp)
+elif cicmd="PICK" then
+ ci_temp=''
+ h[1]="" h[2]="" h[3]="" h[4]="" h[5]="" h[6]="" h[7]="" h[8]="" h[9]="" h[10]="" h[11]=""
+ if y="ERROR" then
+  ci_temp=ci_temp+"What action would you like to perform on Column "+x+"?<hr>"
+  h[1]="2" h[2]="" h[3]="" h[4]="" h[5]="" h[6]="" h[7]="" h[8]="" h[9]="" h[10]="" h[11]="" h[12]=""
+  if auth(8)=1 then h[2]="Sort Column (Alpha)" h[3]="Sort Column (Numeric)" h[4]="Sort Column (Date)" /if
+  if auth(10)=1 then h[5]="Insert Column Before" h[6]="Insert Column After" /if
+  if auth(12)=1 then h[7]="Move Left" h[8]="Move Right" h[9]="Move to First Column" h[10]="Move to Last Column" /if
+  if auth(4)=1 then h[11]="Delete Column" /if
+ else
+  ci_temp=ci_temp+"What action would you like to perform on Row "+y+"?<hr>"
+  h[1]="5"
+  if auth(9)=1 then h[2]="Sort Row (Alpha)" h[3]="Sort Row (Numeric)" h[4]="Sort Row (Date)" /if
+  if auth(11)=1 then h[5]="Insert Row Before" h[6]="Insert Row After" /if
+  if auth(13)=1 then h[7]="Move Up" h[8]="Move Down" h[9]="Move to Top" h[10]="Move to Bottom" /if
+  if auth(5)=1 then h[11]="Delete Row" /if
+ /if
+ ci_temp=ci_temp+'
+<table width=100%>
+ <tr>
+  <td><a href="'+page+'" name=cicmd value="'+ci_textpath+'|CHOOSE1|'+x+'|'+y+'|'+2+'">'+h[2]+'</a></td>
+  <td><a href="'+page+'" name=cicmd value="'+ci_textpath+'|CHOOSE1|'+x+'|'+y+'|'+7+'">'+h[7]+'</a></td>
+ </tr>
+ <tr>
+  <td><a href="'+page+'" name=cicmd value="'+ci_textpath+'|CHOOSE1|'+x+'|'+y+'|'+3+'">'+h[3]+'</a></td>
+  <td><a href="'+page+'" name=cicmd value="'+ci_textpath+'|CHOOSE1|'+x+'|'+y+'|'+8+'">'+h[8]+'</a></td>
+ </tr>
+ <tr>
+  <td><a href="'+page+'" name=cicmd value="'+ci_textpath+'|CHOOSE1|'+x+'|'+y+'|'+4+'">'+h[4]+'</a></td>
+  <td><a href="'+page+'" name=cicmd value="'+ci_textpath+'|CHOOSE1|'+x+'|'+y+'|'+9+'">'+h[9]+'</a></td>
+ </tr>
+ <tr>
+  <td><a href="'+page+'" name=cicmd value="'+ci_textpath+'|CHOOSE1|'+x+'|'+y+'|'+5+'">'+h[5]+'</a></td>
+  <td><a href="'+page+'" name=cicmd value="'+ci_textpath+'|CHOOSE1|'+x+'|'+y+'|'+10+'">'+h[10]+'</a></td>
+ </tr>
+ <tr>
+  <td><a href="'+page+'" name=cicmd value="'+ci_textpath+'|CHOOSE1|'+x+'|'+y+'|'+6+'">'+h[6]+'</a></td>
+  <td><a href="'+page+'" name=cicmd value="'+ci_textpath+'|CHOOSE1|'+x+'|'+y+'|'+11+'">'+h[11]+'</a></td>
+ </tr>
+</table>'
+ if y="ERROR" then
+  ci_temp=ci_temp+'<hr><p>NAME:<input type=text size=10 name=ad['+x+',3] style="border:0; width:50%; margin:0px"><br>
+  WIDTH:<input type=text size=3 name=ad['+x+',1]>  HEIGHT:<input type=text size=3 name=ad['+x+',2]><input type=submit name=ci_button value="Adjust"></p>'
+  ci_temp=form(ci_temp)
+ /if
+ ci_temp=ci_temp+'<hr><p><a href="'+page+'" name=cicmd value="'+ci_textpath+'|ERROR|ERROR|ERROR|ERROR">[CANCEL]</a></p>'+lf
+ ci_temp=centeronpage(ci_temp)
+elif cicmd="PREFS" then
+
+
+  ci_temp='<table cellpadding=3 cellspacing=3 bgcolor=#eeeeee>
+  <input type="hidden" name="csid">
+  <tr><td colspan=3><br></td><td colspan='+(w*2-3)+' align=right>ShowLabels:<input type="checkbox" name="show" value="yes">&nbsp;&nbsp;|&nbsp;&nbsp;PageSize:<input type=text size=3 name=pagesize></td><td><input type=submit name=ci_button value="Save"></td></tr>
+  <tr><td colspan='+(w*2+1)+'><b>Column Properties</b><hr></td></tr>'
+  ci_temp=ci_temp+'<tr><td></td>'
+  for name=xx value=1 to w do
+   ci_temp=ci_temp+'<td colspan=2 align=center bgcolor=#aaaaaa>'+xx+'</td>'
+  /for
+  ci_temp=ci_temp+'<tr><td bgcolor=#aaaaaa>NAME</td>'
+  for name=xx value=1 to w do
+   ci_temp=ci_temp+'<td colspan=2><input type=text size=10 name=ad['+xx+',3] style="border:0; width:100%; margin:0px"></td>'
+  /for
+  ci_temp=ci_temp+'<tr><td bgcolor=#aaaaaa>WIDTH/HEIGHT</td>'
+  for name=xx value=1 to w do
+   ci_temp=ci_temp+'<td align=left><input type=text size=3 name=ad['+xx+',1]></td><td align=right><input type=text size=3 name=ad['+xx+',2]></td>'
+  /for
+  ci_temp=ci_temp+'</tr>'
+  if auth(16)=1 then
+   # Permissions /#
+   ci_temp=ci_temp+'<tr><td colspan='+(w*2+1)+'><br>&nbsp<br><b>Permissions</b><hr></td></tr>'
+
+   ci_temp=ci_temp+'<tr><td colspan='+(w*2+1)+'
+
+
+
+<table width=100%>
+ <tr>
+  <td align=right>Edit</td><td align=left><input type="checkbox" name="p" value="1"></td>
+  <td align=right>Add Columns</td><td align=left><input type="checkbox" name="p" value="2"></td>
+  <td align=right>Add Rows</td><td align=left><input type="checkbox" name="p" value="3"></td>
+  <td align=right>Delete Columns</td><td align=left><input type="checkbox" name="p" value="4"></td>
+ </tr>
+ <tr>
+  <td align=right>Delete Rows</td><td align=left><input type="checkbox" name="p" value="5"></td>
+  <td align=right>Edit Columns</td><td align=left><input type="checkbox" name="p" value="6"></td>
+  <td align=right>Edit Rows</td><td align=left><input type="checkbox" name="p" value="7"></td>
+  <td align=right>Sort Columns</td><td align=left><input type="checkbox" name="p" value="8"></td>
+ </tr>
+ <tr>
+  <td align=right>Sort Rows</td><td align=left><input type="checkbox" name="p" value="9"></td>
+  <td align=right>Insert Columns</td><td align=left><input type="checkbox" name="p" value="10"></td>
+  <td align=right>Insert Rows</td><td align=left><input type="checkbox" name="p" value="11"></td>
+  <td align=right>Move Columns</td><td align=left><input type="checkbox" name="p" value="12"></td>
+ </tr>
+ <tr>
+  <td align=right>Move Rows</td><td align=left><input type="checkbox" name="p" value="13"></td>
+  <td align=right>Edit All At Once</td><td align=left><input type="checkbox" name="p" value="14"></td>
+  <td align=right>Change Preferences</td><td align=left><input type="checkbox" name="p" value="15"></td>
+  <td align=right>Change Permissions</td><td align=left><input type="checkbox" name="p" value="16"></td>
+ </tr>
+</table>
+</td></tr>'
+
+
+  /if
+
+
+  ci_temp=ci_temp+"</table>"+lf
+  ci_temp=form(ci_temp)
+  ci_temp=centeronpage(ci_temp)
+/if
+
+
+
+
+
+
+ci_temp='<body topmargin=0 leftmargin=0 marginwidth=0 marginheight=0 bgcolor="#ffffff"'+onloadcode+'>'+lf+ci_temp
+display ci_temp /display
+ci_temp="ERROR" cicmd="ERROR" ci_button="ERROR" ci_searchtext="ERROR" ci_textpath="ERROR"
+p="ERROR"
+yy=1
+for name=xx value=1 to 16 do
+ if auth(xx)=1 then p[1,yy]=xx yy=yy+1 /if
+/for
+>>
+</html>
+<<overlay doit
+if ci_button<>"Save" and ci_button<>"Search" then ci_button=htmlos.clicked /if
+
+# Do Prefs Stuff /#
+ # Adjust Permissions /#
+ if p<>"ERROR" then
+  ci_permissions="NNNNNNNNNNNNNNNN"
+  for name=xx value=1 to rows(p) do
+   if p[1,xx]>0 and p[1,xx]<17 then
+    ci_permissions=left(ci_permissions,p[1,xx]-1)+"Y"+right(ci_permissions,length(ci_permissions)-p[1,xx])
+   /if
+  /for
+ /if
+ # Copy ad to prefs file /#
+ ci_temp=adtomd()
+
+goto page
+>>

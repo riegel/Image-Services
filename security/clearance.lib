@@ -1,0 +1,14 @@
+# This code does the actual test to see if this file can be run /#
+expand file="/system/clearimage/DLL.lib" /expand
+if clear_users.conf='ERROR' then copy file=ci_approot+'/security/clear_users.conf' ts=',' to clear_users.conf /copy /if
+for name=clear_users.conf rownum=y do
+ temp=indirectionset(clear_users.conf[1,y],indirection(clear_users.conf[1,y]+'_SHADOW'))
+/for
+temp=securityinfo(page)
+if temp[9]<>'PUBLIC' and temp<>'ERROR' then
+ if clear_user='' or clear_user='ERROR' then clear_bouncepage=page goto "/system/login.html" /if
+ if clear_user<>'admin' then
+  msg=ci_table(temp)+page
+  if count(' '+clear_mygroups+' ',' '+temp[9]+' ')=0 then goto "/apps/imageservices/security/unauthorized.html" /if
+ /if
+/if

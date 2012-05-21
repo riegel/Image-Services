@@ -1,0 +1,188 @@
+function example(num) locals b,temp do
+ b[1]="Not implemented yet."
+ b[2]=""
+ b[3]=""
+
+if num=6 then
+ if not(isfile(ci_approot+"tmp/resize"+usernum)) then temp=ci_cpfile(ci_approot+"images/resize.jpg",ci_approot+"tmp/resize"+usernum) /if
+ if demo_x="ERROR" then demo_x=200 demo_y=200 /if
+ if demo_y="ERROR" then demo_x=200 demo_y=200 /if
+ b[1]=' <form action="'+page+'" accept-charset="utf-8">
+ <table width=100% border=2 cellpadding=6>
+  <tr><td bgcolor=#eeeeee align=center valign=center>(<input type=text name=demo_x size=3>,<input type=text name=demo_y size=3>)<input type=submit name="mybutton" value="Resize Image"></td></tr>
+  <tr><td align=center valign=center>'+ci_img(ci_approot+"tmp/resize"+usernum,demo_x,demo_y,"FALSE")+'</td></tr>
+ </table>
+ </form>'
+ b[2]='<b>Resize example.</b><br>Change the bounding coordinates and click resize image.<br>'
+ if left(ci_tagresults[1],5)<>"ERROR" then b[2]=b[2]+'Actual dimensions are ('+ci_tagresults[1]+','+ci_tagresults[2]+')' /if
+ b[2]=b[2]+'</td><tr><td colspan=2 align=center><hr><b>Code:</b><br><textarea rows=15 cols=60 name=codesnip></textarea>'
+ b[3]='<html>
+<body>
+ <form action="<<page>>" accept-charset="utf-8">
+  <table width=100% border=2 cellpadding=6>
+   <tr>
+    <td bgcolor=#eeeeee align=center valign=center>
+     (<input type=text name=demo_x size=3>,<input type=text name=demo_y size=3>)
+     <input type=submit name="mybutton" value="Resize Image">
+    </td>
+   </tr>
+   <tr>
+    <td align=center valign=center>
+     <<ci_img("resize",demo_x,demo_y,"FALSE")>>
+    </td>
+   </tr>
+  </table>
+ </form>
+</body>
+</html>'
+
+
+/if
+
+ if num=8 then
+  if guess<>"TRUE" and guess<>"FALSE" then guess="FALSE" /if
+  if not(isfile(ci_approot+"tmp/header"+usernum)) then
+   temp=ci_cpfile(ci_approot+"images/header",ci_approot+"tmp/header"+usernum)
+   temp=ci_cpfile(ci_approot+"images/header.csv",ci_approot+"tmp/header"+usernum+".csv")
+  /if
+  b[1]=ci_imgmap(ci_approot+"tmp/header"+usernum,guess)+'<br><a href='+page+' name=guess value='+not(guess)+'>[change login state]</a>'
+  b[2]='This illustrates an image map example. The image is an image map. Click [change login state] to see what happens when a user is logged in. When logged in you can click the icon in the upper left corner to edit the header. The header editor is open source and can be modified to suit your particular needs.</td><tr><td colspan=2 align=center><hr><b>Code:</b><br><textarea rows=15 cols=60 name=codesnip></textarea>'
+  b[3]='<<ci_imgmap("header","'+guess+'")>>'
+ /if
+
+
+ if num=9 then
+  if guess<>"TRUE" and guess<>"FALSE" then guess="FALSE" /if
+
+  if not(isfile(ci_approot+"tmp/header2"+usernum)) then
+   temp=ci_cpfile(ci_approot+"images/header2",ci_approot+"tmp/header2"+usernum)
+   temp=ci_cpfile(ci_approot+"images/header2.csv",ci_approot+"tmp/header2"+usernum+".csv")
+   temp=ci_cpfile(ci_approot+"images/header2ACTIVE",ci_approot+"tmp/header2"+usernum+"ACTIVE")
+   temp=ci_cpfile(ci_approot+"images/header2ALL",ci_approot+"tmp/header2"+usernum+"ALL")
+   temp=ci_cpfile(ci_approot+"images/header2HOVER",ci_approot+"tmp/header2"+usernum+"HOVER")
+  /if
+
+  map1=ci_imgmap2(ci_approot+"tmp/header2"+usernum,guess)
+  b[1]=map1[3]+'<br><a href='+page+' name=guess value='+not(guess)+'>[change login state]</a>'
+  b[2]='This illustrates an image map example. The image is an image map. Click [change login state] to see what happens when a user is logged in. When logged in you can click the icon in the upper left corner to edit the header. The header editor is open source and can be modified to suit your particular needs.</td><tr><td colspan=2 align=center><hr><b>Code:</b><br><textarea rows=15 cols=60 name=codesnip></textarea>'
+  b[3]='<<
+head=ci_imgmap2("header2","'+guess+'")
+>>
+<html>
+<head>
+ <<head[2]>>
+</head>
+<body>
+ <<head[3]>>
+</body>
+</html>'
+ /if
+
+
+
+ if num=7 then
+  if guess=message and message<>"ERROR" then msg="Correct" else msg="Wrong" /if
+  if not(isfile(ci_approot+"tmp/verify"+usernum+".jpg")) then temp=ci_cpfile(ci_approot+"images/verify.jpg",ci_approot+"tmp/verify"+usernum+".jpg") /if
+  if button="Submit" then 
+   b[1]=msg+"<br><a href="+page+">TRY AGAIN</a>"
+   msg="ERROR"
+   button="ERROR"
+   guess="ERROR"
+  else
+   temp=ci_randomimage()
+   message=temp[2,1]
+   b[1]=temp[1,1]
+   b[1]="Type the message.<br>"+b[1]+"<br><form action="+page+" accept-charset="utf-8"><input type=text name=guess><br><input type=submit name=button value=Submit>"
+  /if
+  b[2]='This is an image verify example.</td><tr><td colspan=2 align=center><hr><b>Code:</b><br><textarea rows=15 cols=60 name=codesnip></textarea>'
+  b[3]='
+<<
+expand file="/system/clearimage/DLL.lib" /expand
+if guess=message and message<>"ERROR" then msg="Correct" else msg="Wrong" /if
+if not(isfile("verify"+usernum+".jpg")) then ci_cpfile("verify.jpg","verify"+usernum+".jpg") /if
+>>
+<html>
+<center>
+<<
+if button="Submit" then 
+ display msg+"<br><a href="+page+">TRY AGAIN</a>" /display
+ msg="ERROR"
+ button="ERROR"
+ guess="ERROR"
+else
+ temp=ci_randomimage()
+ message=temp[2,1]
+ display "Type the number<br>"+temp[1,1]+"<br><form action="+page+" accept-charset="utf-8"><input type=text name=guess><br><input type=submit name=button value=Submit>" /display
+ temp="ERROR"
+/if
+>>
+</center>
+</html>
+
+'
+ /if
+
+ return b /return
+/function
+
+
+
+function ci_cpbar(level) locals a,b,num,text,path,wd,ht do
+ num[1,1]="Configuration"
+ num[2,1]="Test Image"
+ num[3,1]="External URL"
+ num[4,1]="Image Magick"
+ num[5,1]="EXAMPLES"
+ num[6,1]="Image Resize"
+ num[7,1]="Image Verify"
+ num[8,1]="HTML Image Map"
+ num[9,1]="CSS Image Map"
+ num[10,1]="Quick Aestiva Control Panel"
+ return num[level,1] /return
+/function
+
+
+
+function ci_cpcontent(level) locals text,b,path,wd,ht do
+
+ msg[1,1]='Click the icon in the upper left corner of the image to CHANGE/DELETE/UPLOAD the image.'
+ msg[2,1]='Click the icon to upload an image.'
+ msg[3,1]='If an image is displayed then the external URL creator is working. If there is no image make sure "/apps/imageservices/dynamicimage.html" is in the start link allow list and "image" is an allowed variable. (find this under Control Panel>>Security>>Start Link Allow).'
+ msg[4,1]='An image with a red border indicates Image Magick options are being parsed.'
+
+ if iconpage<>"ERROR" then
+  path=ci_approot+"tmp/test.jpg"
+ else
+  path=ci_approot+"tmp/test"+usernum+".jpg"
+ /if
+ wd=100 ht=100 d=""
+ text="<table width=100% height=100% cellpadding=10 cellspacing=0><tr>"
+ if level=1 then text=text+"<td align=center colspan=2>"+replace(ci_config(),"<form action=","<form ")+"</td>" /if
+ if level=2 then
+  b=ci_img(path,wd,ht,"TRUE")
+  c=^<hr>
+    <a ^+ci_parsehref(^href="/apps/imageservices/uploadwebcam.html" name="ci_imagepath" value="^+path+^" popup="550,370"^)+^>Web Cam</a>
+    <hr>
+    <a ^+ci_parsehref(^href="/apps/imageservices/upload.html" name="ci_imagepath" value="^+path+^" popup="550,370"^)+^>File</a>
+    <hr>
+    <a ^+ci_parsehref(^href="/apps/imageservices/uploadurl.html" name="ci_imagepath" value="^+path+^" popup="550,370"^)+^>URL</a>^
+  if ci_tagresults[9]=1 then
+   text=text+'<td align=center width=30%>'+b+c+'</td><td width=70%>'+msg[1,1]+'</td>'
+  else
+   text=text+'<td align=center width=30%>'+b+c+'</td><td width=70%>'+msg[2,1]
+   if left(b,5)="ERROR" then
+    if debugit="SENT" then
+     text=text+"(Problem Report sent)" debugit="ERROR"
+    else
+     text=text+'<a href='+page+' name=debugit value="TRUE">(Send problem report to Clear Image)</a>'
+    /if
+   /if
+   text=text+'</td>'
+  /if
+ /if
+ if level=3 then text=text+'<td align=center width=30%><img src='+ci_geturl(path,wd,ht,"FALSE")+'></td><td width=70%>'+msg[3,1]+'</td></tr><tr><td colspan=2><hr>'+ci_geturl(path,wd,ht,"FALSE")+'</td>' /if
+ if level=4 then text=text+'<td align=center width=30%>'+ci_img2(path,wd-6,ht-6,"FALSE","","convert",ci_ow+" -bordercolor red -border 3x3")+'</td><td width=70%>'+msg[4,1]+ '<a href='+page+' name=ci_ow value=OVERWRITE>(redraw)</a></td>' /if
+ if level>4 then b=example(level) codesnip=b[3] text=text+'<td align=center width=30%>'+b[1]+'</td><td width=70%>'+b[2]+'</td>' /if
+ text=text+"</tr></table>"
+ return text /return
+/function

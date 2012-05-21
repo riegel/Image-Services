@@ -1,0 +1,87 @@
+<<
+ci_temp=split(ci_restore,"|")
+ci_restore=ci_temp[1,1]
+ci_textpath=ci_temp[1,2]
+copy file=ci_restore to ci_temp /copy
+>>
+<html>
+<<
+ ci_enterpage="ERROR"
+ copy file=ci_textpath to ci_mytext /copy
+ if ci_searchtext<>"" and ci_searchtext<>"ERROR" then ci_mytext=replaceall(ci_mytext,ci_searchtext,lf+lf+"############"+lf+ci_searchtext+lf+lf) /if
+if right(ci_textpath,4)=".txt" then wrap="" else wrap='wrap="OFF"' /if
+display '
+<head>
+<title>'+ci_title(ci_textpath)+': NoteWeb</title>
+<style>
+<!--
+TEXTAREA {font-family: Lucida Console,Courier,Times; font-size: 8pt;}
+BODY {font-size: 8pt; font-family: Verdana; font-weight: normal; color: #000000; background-color:#e7f6eb; margin:0;padding:0;border:0;}
+TD {font-size: 8pt; font-family: Verdana; font-weight: normal; color: #000000;}
+A  {color: blue; text-decoration: none}
+A:Hover {color: #FF8400; text-decoration: underline}
+A.header  {color: white; text-decoration: none}
+A.header:Hover {color: #FF8400; text-decoration: underline}
+-->
+</style>'+jscript('
+<script language="javascript">
+<!--
+function checkSave(y) {
+ x=event.keyCode;
+ if (x==19) {document.thetext.submit();}
+}
+function resizetextarea()
+{
+ var winW = 630, winH = 460;
+ if (parseInt(navigator.appVersion)>3) {
+  if (navigator.appName=="Netscape") {
+   winW = window.innerWidth;
+   winH = window.innerHeight-27;
+  }
+  if (navigator.appName.indexOf("Microsoft")!=-1) {
+   winW = document.body.offsetWidth;
+   winH = document.body.offsetHeight-32;
+  }
+ }
+ txtarea=document.getElementById("txtarea");
+ txtarea.style.width=winW+"px";
+ txtarea.style.height=winH+"px";
+ sf();
+}
+function sf(){document.thetext.ci_mytext.focus();}
+-->
+</script>')+'
+</head>
+'+jscript('<body onResize="resizetextarea();" onLoad="resizetextarea();this.focus();sf();" onKeyPress="checkSave(event);">')
+ +hscript('<body'+testjscript(1)+'>'+testjscript(2))+'
+<div style="margin:2;padding:0;border:0;">
+&nbsp;&nbsp;
+
+<a href="doit" name="ci_restore" value="'+ci_restore+'|'+ci_textpath+'">Use&nbsp;Restore&nbsp;Point&nbsp;'+replace(chopright(replaceall(chopleft(ci_restore,"TEMPBAK"),"TEMPBAK",""),"."),".","")+'</a>
+
+&nbsp;&nbsp;<a href="edittextrestore.html" name="ci_textpath" value="'+ci_textpath+'">BACK</a>
+</div>
+<div style="position: fixed;bottom: 0px;">
+' /display
+if jsc="TRUE" then 
+ display '<textarea disabled name="ci_temp" id="txtarea" ALLOWHTML ALLOWLINKS cols="'+ciwid+'" rows="'+cihgt+'" '+wrap+' style="border:0; height:100px; width:200px; margin:0;"></textarea>' /display
+else
+ display '<center><textarea disabled name="ci_mytemp" id="txtarea" ALLOWHTML ALLOWLINKS cols="'+ciwid+'" rows="'+cihgt+'" '+wrap+'></textarea></center>' /display
+/if
+display '
+</div>
+</form>
+</body>' /display
+ci_button="ERROR"
+>>
+</html>
+<<overlay doit
+ci_temp=split(ci_restore,"|")
+ci_restore=ci_temp[1,1]
+ci_textpath=ci_temp[1,2]
+copy file=ci_textpath to file=ci_textpath+".0" /copy
+copy file=ci_restore to file=ci_textpath /copy
+copy file=ci_textpath+".0" to file=ci_restore /copy
+ci_temp=ci_rmfile(ci_textpath+".0")
+goto "edittext.html"
+>>

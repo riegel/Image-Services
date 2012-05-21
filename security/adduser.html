@@ -1,0 +1,53 @@
+<html>
+<head>
+ <title>Add A User</title>
+ <meta http-equiv="pragma" content="no-cache">
+ <meta http-equiv="cache-control" content="no-cache">
+ <style>
+ <!--
+ BODY    {background: #888888;}
+ BODY,TD {font-size: 9pt; font-family: Verdana; font-weight: normal; color: #000000}
+ A       {color: #2B4F9E; text-decoration: none}
+ A:Hover {color: #2B4Fff; text-decoration: underline}
+ -->
+ </style>
+ </head>
+<body>
+<center>
+<table>
+<tr><td colspan="2">
+<h2>Security Clearance Manager</h2>
+<h4>Add User</h4>
+</td></tr>
+ <form action="adduser" method="post" accept-charset="utf-8">
+<<
+for name=clear_users.conf rowname=x do
+ if x[1]<>'CLEAR_MYGROUPS' then
+  display '<tr><td bgcolor="#eeeeee">'+x[1]+'</td><td bgcolor="#eeeeee"><input type="text" name="'+x[1]+'" size="30"></td></tr>' /display
+ /if
+ b=x[1]
+ @b=''
+/for
+>>
+ <tr><td colspan="2" bgcolor="#aaaaaa"><input type="submit" name="mybutton" value="Add"> | <input type="submit" name="mybutton" value="Cancel"></td></tr>
+ </form>
+</table>
+</center>
+</body>
+</html>
+<<overlay adduser
+if mybutton="Cancel" then 
+ goto "users.html"
+/if
+if mybutton="Reload" or clear_user='' or clear_user='ERROR' or clear_password='' or clear_password='ERROR' then
+ goto page
+/if
+if mybutton="Add" then
+ clear_user=aestivafilename(clear_user)
+ temp=dbadd(ci_approot+'/security/clear_users')
+ temp=dbsearch(ci_approot+'/security/clear_users','CLEAR_USER="'+CLEAR_USER+'"',1,1)
+ record=temp[1,1]
+ goto "edituser.html"
+/if
+goto "users.html"
+>>

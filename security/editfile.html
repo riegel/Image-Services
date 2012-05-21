@@ -1,0 +1,225 @@
+<<
+
+# This is a mirror of /apps/imageservices/filemanager/command.html minus its functions /#
+
+if right(fm_list,1)="|" then fm_list=left(fm_list,length(fm_list)-1) /if
+
+
+function security(dest,fm_list) locals a,text,x,gsel,d,dsel,u,usel do
+ if left(fm_list,1)='|' then fm_list=replace(fm_list,'|','') /if
+ securefile=securityinfo(dest+fm_list)
+ if securefile='ERROR' then
+  if isfile(dest+fm_list) then
+   text='No security defined, would you like to secure '+fm_list+'?<br>&nbsp;<br><a href="createrecord" name="securefile" value="'+destination+fm_list+'">Yes</a> | <a href="details.html">No</a>'
+  else
+   text='ERROR'
+  /if
+ else
+
+
+#
+securityinfo('path/to/file') - This will return
+ 1 - CLEAR_FILE           filename
+ 2 - CLEAR_FILESIZE       filesize
+ 3 - CLEAR_FILEMODIFIED   modified date
+ 4 - CLEAR_FILETYPE       filetype (FILE | DIR)
+ 5 - CLEAR_FILEAREA       filearea (PUBLIC | PRIVATE | MIRROR)
+ 6 - CLEAR_PATH           pathtofile
+ 7 - CLEAR_PATHFILE       fullpath
+ 8 - CLEAR_EDITGROUP      Must belong to this group to edit/delete this file
+ 9 - CLEAR_RUNGROUP       Must belong to this group to execute this file
+10 - CLEAR_INSTARTMENU    Y|N - Determines if it should be part of the global start menu
+11 - CLEAR_PUBLICRULE     For Databases only Critera to be applied to public Db Reads and Writes
+12 - CLEAR_GROUPRULE      For Databases only Critera to be applied to group  Db Reads and Writes
+
+modifysecurityinfo('path/to/file',(either text or an array like above))
+
+/#
+
+
+clear_groups=dbsearch(ci_approot+'/security/clear_groups','CLEAR_USER="ROOT"',1,1000)
+gsel='ERROR'
+if dbresults[5,1]>0 then
+ gsel='<option value="">Not defined</option>'
+ for name=clear_groups rowname=x do
+  if length(x[3])>20 then x[3]=left(x[3],19)+'...' /if
+  gsel=gsel+'<option value="'+x[2]+'">('+x[2]+') '+x[3]+'</option>'
+ /for
+ gsel=gsel+'<option value="PUBLIC">(PUBLIC) All requests allowed</option>'
+/if
+
+text=msg+'<table>'
+
+
+mybutton="ERROR"
+text=text+'<form action="editrecord" accept-charset="utf-8">
+<input type="hidden" name="securefile[1]">
+<input type="hidden" name="securefile[2]">
+<input type="hidden" name="securefile[3]">
+<input type="hidden" name="securefile[4]">
+<input type="hidden" name="securefile[5]">
+<input type="hidden" name="securefile[6]">
+<input type="hidden" name="securefile[7]">
+'
+
+if temp_grouprule='ERROR' or temp_publicrule='ERROR' then
+  if securefile[11]='' or securefile[11]='ERROR' then temp_publicrule='' else temp_publicrule='YES' /if
+  if securefile[12]='' or securefile[12]='ERROR' then temp_grouprule='' else temp_grouprule='YES' /if
+/if
+
+
+if right(fm_list,3)='.db' then
+
+
+ u=dbstatus('/apps/imageservices/security/clear_users')
+ usel='<option value="">User Attribute...</option>'
+ for name=x value=2 to rows(u)-4 do
+  usel=usel+'<option value="'+u[1,x+4]+'">'+u[1,x+4]+' ('+indirection(u[1,x+4])+')</option>'
+ /for
+
+
+ d=dbstatus(left(securefile[7],length(securefile[7])-3))
+ dsel='<option value="">Field...</option>'
+ for name=x value=2 to rows(d)-4 do
+  dsel=dsel+'<option value="'+d[1,x+4]+'">'+d[1,x+4]+'</option>'
+ /for
+
+
+
+ text=text+'<tr><td colspan="2" align="center">Database Security ('+fm_list+')<hr>&nbsp;<br></td></tr>'
+
+ if gsel='ERROR' then
+  text=text+'<tr><td colspan="2">No System Groups defined.<input type="hidden" name="securefile[8]"><input type="hidden" name="securefile[9]"></td></tr>'
+ else
+
+  text=text+'<tr><td align="right">Group Access:</td><td><SELECT NAME="securefile[8]" SIZE="1">'+gsel+'</select></td></tr>'
+  if temp_grouprule='' then
+   text=text+'<tr><td align="right"><input type="checkbox" name="temp_grouprule" value="YES" onchange="submit();"></td><td>Restrict access with search rule.</td></tr>'
+  else
+   text=text+'<tr><td align="right"><input type="checkbox" name="temp_grouprule" value="YES" onchange="submit();"></td><td>Restrict access with search rule.</td></tr>'
+   text=text+'<tr><td align="right">Search Rule:</td><td><input type="text" NAME="securefile[12]"></td></tr>'
+  /if
+
+  text=text+'<input type="hidden" name="securefile[10]">'
+
+
+  text=text+'<tr><td align="right">Other Group Access:</td><td><SELECT NAME="securefile[9]" SIZE="1">'+gsel+'</select></td></tr>'
+  if temp_publicrule='' then
+   text=text+'<tr><td align="right"><input type="checkbox" name="temp_publicrule" value="YES" onchange="submit();"></td><td>Restrict access with search rule.</td></tr>'
+  else
+   text=text+'<tr><td align="right"><input type="checkbox" name="temp_publicrule" value="YES" onchange="submit();"></td><td>Restrict access with search rule.</td></tr>'
+   text=text+'<tr><td align="right">Search Rule:</td><td><input type="text" NAME="securefile[11]"></td></tr>'
+  /if
+
+
+
+ /if
+else
+ text=text+'<tr><td colspan="2" align="center">File Security ('+fm_list+')<hr>&nbsp;<br></td></tr>'
+
+ if gsel='ERROR' then
+  text=text+'<tr><td colspan="2">No System Groups defined.<input type="hidden" name="securefile[8]"><input type="hidden" name="securefile[9]"></td></tr>'
+ else
+
+  text=text+'<tr><td align="right"><input type="checkbox" name="securefile[10]" value="Y"></td><td>Include in Startup Menu</td></tr>'
+
+
+#
+  text=text+'<tr><td align="right">Modify Privilege:</td><td><SELECT NAME="securefile[8]" SIZE="1">'+gsel+'</select></td></tr>'
+/#
+  text=text+'<tr><td align="right"><input type="hidden" NAME="securefile[8]"></td></tr>'
+
+  text=text+'<tr><td align="right">Run Privilege:</td><td><SELECT NAME="securefile[9]" SIZE="1">'+gsel+'</select></td></tr>'
+  text=text+'<input type="hidden" name="securefile[11]"><input type="hidden" name="securefile[12]">'
+ /if
+/if
+
+
+text=text+'<tr><td colspan="2" align="center"><br>&nbsp;<hr><input type="submit" name="mybutton" value="Save"> | <input type="submit" name="mybutton" value="Cancel"> | <input type="submit" name="mybutton" value="Remove Security"></td></tr>'
+
+if right(fm_list,3)='.db' then
+ if temp_grouprule<>'' or temp_publicrule<>'' then
+   text=text+'<tr><td colspan="2"><br>&nbsp;<br>&nbsp;<br>Use The following for help creating a rule for this database<hr></td></tr>'
+   text=text+'<tr><td align="right">dB Fields:</td><td><SELECT NAME="temp_dbfield1" SIZE="1">'+dsel+'</select></td></tr>'
+   text=text+'<tr><td align="right">User Attributes:</td><td><SELECT NAME="temp_userfield1" SIZE="1">'+usel+'</select></td></tr>'
+   text=text+'<tr><td align="right">Search Operators:</td><td><SELECT NAME="temp_userfield1" SIZE="1"><option value="=">= Exact Match</option><option value="~">~ Match Beginning</option><option value="~~">~~ Match Substring</option><option value="!=">!= Not Equal (Same as <>)</option></select></td></tr>'
+ /if
+/if
+
+
+
+
+text=text+'
+</form>
+</table>'
+
+
+
+
+
+
+
+ /if
+ return text /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+temp=action(fm_command)
+if temp="ERROR" then
+ if left(fm_command,6)='DELETE' or left(fm_command,5)='PASTE' then
+  fm_cmd='reload'
+  goto "details.html"
+ else
+  fm_cmd='browse'
+  goto "details.html"
+ /if
+/if
+>>
+<html>
+<head>
+ <<fm_style>>
+ <script>
+  onload=top.frames['browse'].detailsinit;
+ </script>
+</head>
+<<temp>>
+</html>
+<<overlay createrecord
+temp=modifysecurityinfo(securefile,^CLEAR_PATHFILE=^+securefile)
+goto page
+>>
+<<overlay removerecord
+temp=removesecurityinfo(securefile)
+goto page
+>>
+<<overlay editrecord
+if mybutton="Cancel" then
+ goto "/apps/imageservices/filemanager/details.html"
+elif mybutton="Remove Security" then
+ temp=removesecurityinfo(securefile[7])
+ goto page
+else
+ if temp_grouprule='' then securefile[12]='' /if
+ if temp_publicrule='' then securefile[11]='' /if
+ temp=modifysecurityinfo(securefile[7],securefile)
+ goto page
+/if
+>>

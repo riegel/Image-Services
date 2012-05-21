@@ -1,0 +1,49 @@
+<<
+if isdir(destination)="FALSE" then
+ destination=left(destination,length(destination)-locate(reverse(destination),"/"))
+/if
+>>
+<html>
+<head>
+ <<fm_style>>
+ <style>
+  #info   {box-sizing: border-box; position: absolute; left: 0px;   top: 0; width: 30px; height: 24px; border-right: 1px solid #777777; background-image: url('/apps/imageservices/filemanager/images/info.png');     background-repeat: no-repeat; background-position: center center;}
+  #copy   {box-sizing: border-box; position: absolute; left: 30px;  top: 0; width: 30px; height: 24px; border-right: 1px solid #777777; background-image: url('/apps/imageservices/filemanager/images/copy.png');     background-repeat: no-repeat; background-position: center center;}
+  #paste  {box-sizing: border-box; position: absolute; left: 60px;  top: 0; width: 30px; height: 24px; border-right: 1px solid #777777; background-image: url('/apps/imageservices/filemanager/images/paste.png');    background-repeat: no-repeat; background-position: center center;}
+  #folder {box-sizing: border-box; position: absolute; left: 90px;  top: 0; width: 30px; height: 24px; border-right: 1px solid #777777; background-image: url('/apps/imageservices/filemanager/images/dir-add.gif');  background-repeat: no-repeat; background-position: center center;}
+  #file   {box-sizing: border-box; position: absolute; left: 120px; top: 0; width: 30px; height: 24px; border-right: 1px solid #777777; background-image: url('/apps/imageservices/filemanager/images/file-add.gif'); background-repeat: no-repeat; background-position: center center;}
+  #trash  {box-sizing: border-box; position: absolute; left: 150px; top: 0; width: 30px; height: 24px; border-right: 1px solid #777777; background-image: url('/apps/imageservices/filemanager/images/trash.png');    background-repeat: no-repeat; background-position: center center;}
+  #upload {box-sizing: border-box; position: absolute; left: 180px; top: 0; width: 30px; height: 24px; border-right: 1px solid #777777; background-image: url('/apps/imageservices/filemanager/images/upload.gif');       background-repeat: no-repeat; background-position: center center;}
+  #users  {box-sizing: border-box; position: absolute; left: 210px; top: 0; width: 30px; height: 24px; border-right: 1px solid #777777; background-image: url('/apps/imageservices/filemanager/images/groups.gif');   background-repeat: no-repeat; background-position: center center;}
+  #term   {box-sizing: border-box; position: absolute; left: 240px; top: 0; width: 30px; height: 24px; border-right: 1px solid #777777; background-image: url('/apps/imageservices/filemanager/images/terminal.png'); background-repeat: no-repeat; background-position: center center;}
+
+  #info:hover,
+  #copy:hover,
+  #paste:hover,
+  #folder:hover,
+  #file:hover,
+  #upload:hover, 
+  #trash:hover,
+  #users:hover,
+  #groups:hover,
+  #term:hover    {box-sizing: border-box; background-color: #b5c0d2; border-right: 1px solid #777777; border-top: 1px solid #777777; border-bottom: 1px solid #b5c0d2;}
+ </style>
+</head>
+<body style="background-image: url('/apps/imageservices/filemanager/images/toolbar-bg.png'); padding: 0; margin: 0; border: 0;">
+ <div id="info"   style="" onclick="top.frames['browse'].docommand('INFO');"></div>
+ <div id="copy"   style="" onclick="top.frames['browse'].docommand('COPY');"></div>
+ <div id="paste"  style="" onclick="top.frames['browse'].docommand('PASTE');"></div>
+ <div id="folder" style="" onclick="top.frames['browse'].docommand('folder|');"></div>
+ <div id="file"   style="" onclick="top.frames['browse'].docommand('file|');"></div>
+ <div id="upload" style="" onclick="top.frames['browse'].docommand('upload');"></div>
+ <div id="trash"  style="" onclick="top.frames['browse'].docommand('DELETE');"></div>
+<<
+if CLEAR_USER='admin' or iconpage="/system/desktop/index.html" or iconpage="/system/desktop/aestivaindex.html" then
+ display ^
+ <div id="users" style="" onclick="top.frames['browse'].docommand('users');"></div>
+ <div id="term"  style="" onclick="top.frames['browse'].docommand('terminal');"></div>
+ ^ /display
+/if
+>>
+</body>
+</html>

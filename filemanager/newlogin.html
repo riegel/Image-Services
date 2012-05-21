@@ -1,0 +1,10 @@
+<<expand file="/system/clearimage/DLL.lib" /expand
+   temp=ci_rmimage("/apps/imageservices/tmp/lrd.jpg")
+   temp=ci_cpfile("/apps/imageservices/images/loginrequired.gif","/apps/imageservices/tmp/lrd.jpg")
+   aa='OVERWRITE-font '+ci_getpath('/apps/imageservices/fonts/MACHINE_.TTF')+' -pointsize 30 -fill "#ffffff" '+
+      '-draw "gravity center text 0,-85 '+"'"+domainname+"'"+'" '
+   x=ci_img2("/apps/imageservices/tmp/loginrequired.jpg","","","FALSE","","convert",aa)
+>>
+<html>
+ <<x>>
+</html>

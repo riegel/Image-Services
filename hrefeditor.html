@@ -1,0 +1,39 @@
+<<
+expand file="/system/clearimage/DLL.lib" /expand
+copy file=ci_imagepath to ci_href /copy
+>>
+<html>
+ <head>
+  <title>href editor: <<ci_imagepath>></title>
+  <style>
+   body, p, table, td        {font: 10px Verdana, Arial, Helvetica, sans-serif;}
+  </style>
+ </head>
+<body>
+ <table width="100%" height="100%" cellpadding="0" cellspacing="0">
+  <tr> 
+   <td align="center" valign="center">
+<table width="100%">
+ <tr>
+  <td>Link builder: (Use the examples below to build your links
+<br>href="http://www.clearimageonline.com"
+<br>href="/path/to/index.html"
+<br>href="products.html" name="product" value="Widget"
+<br>href="showdetail.html" name="image" value="logo.jpg" popup="600,500"</td>
+ </tr>
+ <tr>
+  <td align="left">
+   <form action="saveit" method="post" accept-charset="utf-8">
+    <input type="hidden" name="ci_imagepath" value="<<ci_imagepath>>">
+    <textarea name="ci_href" rows="3" cols="40"></textarea><input type="submit" name="ci_button" value="Save">
+   </form>
+  </td>
+ </tr>
+   </td>
+  </tr>
+ </table>
+</html>
+<<overlay saveit
+copy ci_href to file=ci_imagepath /copy
+goto page
+>>

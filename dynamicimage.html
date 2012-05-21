@@ -1,0 +1,24 @@
+<<
+expand file="/system/clearimage/DLL.lib" /expand
+# ci_geturl(path,x,y,crop) is used to call this page 
+  crop="TRUE" means the image will be cropped instead of scaled
+  On this page crop is image[3] /#
+function pushimage(image) locals x,y do
+ # Do not allow images over 500 pixels in height or width /#
+ if image[1]>2000 then image[1]="" image[2]="" /if
+ if image[2]>2000 then image[1]="" image[2]="" /if
+ if image[3]="TRUE" then
+  x=ci_imgcrop(image[4],image[1],image[2],"FALSE","center","FALSE")
+ else
+  x=ci_imgnr(image[4],image[1],image[2],"FALSE")
+ /if
+ x=ci_tagresults
+ if x[9]=1 then
+  y=filepush(x[10],"image/"+lower(x[3]))
+ /if
+ y=filepush("/apps/imageservices/images/pict-128-dim.gif","image/gif")
+/function
+append now+' '+image+lf to file="/apps/imageservices/dynamicimage.log" /append
+image=listtorow(image,",")
+image=pushimage(image)
+>>

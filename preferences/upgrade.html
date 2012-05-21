@@ -1,0 +1,89 @@
+<<
+expand file="/system/clearimage/DLL.lib" /expand
+if metatag='ERROR' then metatag='' /if
+>>
+<html>
+ <head>
+  <title>Image Services Configuration Page</title>
+  <style>
+   .medium             {font-size: 18px;}
+   TEXTAREA       {font-family: Lucida Console,Courier,Times}
+   BODY           {font-size: 10pt; font-family: Verdana; font-weight: normal; color: #888888; padding:40px;}
+   TD             {font-size: 10pt; font-family: Verdana; font-weight: normal; color: #888888;}
+   A              {color: #5791CD; text-decoration: none}
+   A:Hover        {color: #EEC767; text-decoration: none}
+   A.header       {color: white; text-decoration: none}
+   A.header:Hover {color: #FF8400; text-decoration: underline}
+   PRE            {font-family: Courier;} 
+  </style>
+  <<metatag>>
+ </head>
+ <body>
+  This copy of Image Services is <<ci_version()>>.
+  <<
+    if message<>"ERROR" then
+     display message /display
+    else
+     if ci_serverversion=ci_version() then
+      display ' It appears to be up to date.<hr><a href="getimageservices">Download latest version ('+ci_serverversion+') and (re)install</a>' /display
+     else
+      display '<hr><a href="getimageservices">Download latest version ('+ci_serverversion+') and install</a>' /display
+     /if
+    /if
+    message="ERROR"
+metatag='ERROR'
+  >>
+<hr><h3>Lastest Changelog for (<<ci_serverversion>>)</h3>
+<pre><<ci_serverversionhistory>></pre>
+ </body>
+</html>
+<<
+ overlay getimageservices
+
+ metatag=''
+ o=sysmd('/apps/bundle_files')
+ thefile='/apps/bundle_files/imageservices_'+replaceall(ci_serverversion,'.','_')+'.bb'
+ if domainname="clearimageonline.com" then
+  temp=ci_cpfile('/domain/clearimageonline/imageservices.bb',thefile)
+ else
+  temp=NETWEB('clearimageonline.com/home/imageservices.bb',50000000,600,'GET','','',thefile)
+ /if
+ fpl=FILEPACKLIST(thefile)
+ fpl=getcoleq(fpl,1,'getimage.lib')
+ if fpl[1,1]="getimage.lib" then 
+  if domainname="clearimageonline.com" then
+   # Do nothing /#
+   message="Clear Image online can't update iself."
+  else
+   temp=fileunpack(thefile,'/apps/imageservices','')
+   if temp[1,1]="TRUE" then
+    if not(isdir('/system/clearimage/')) then
+     sysmd('/system/clearimage/')
+    /if
+    thefile='/system/clearimage/DLL.bb'
+    temp=NETWEB('clearimageonline.com/home/DLL.bb',50000000,600,'GET','','',thefile)
+    fpl=FILEPACKLIST(thefile)
+    temp=fileunpack(thefile,'/system/clearimage/','')
+    if temp[1,1]="TRUE" then
+     message='Image Services upgraded. <a href="controlpanel.html" target="_top">Reload</a>.'
+     metatag=^<meta HTTP-EQUIV="REFRESH" CONTENT="0; URL=javascript:window.open('^+getlink('controlpanel.html')+^','_parent');">^
+     fromupgrade='true'
+
+     temp=sysls('/system/clearimage/libraries')
+     for name=temp rowname=x do
+      temp1='DLL'+x[1]
+      @temp1='ERROR'
+     /for
+
+    else
+     message=ci_table(temp)
+    /if
+   else
+    message=ci_table(temp)
+   /if
+  /if 
+ else
+  message="Unexpected ERROR, Images Services Update server is unavailable. Try manual update."
+ /if
+ goto page
+>>

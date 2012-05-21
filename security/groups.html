@@ -1,0 +1,71 @@
+<<
+expand file="/system/clearimage/DLL.lib" /expand
+clear_groups=dbsearch(ci_approot+'/security/clear_groups','CLEAR_USER="ROOT"',1,1000)
+copy file=ci_approot+'/security/clear_users.conf' ts=',' to clear_users.conf /copy
+for name=clear_users.conf rownum=y do
+ x[y+1]=clear_users.conf[1,y]
+ temp=indirectionset(clear_users.conf[1,y],indirection(clear_users.conf[1,y]+'_SHADOW'))
+/for
+>>
+<html>
+<head>
+ <title>Groups</title>
+ <meta http-equiv="pragma" content="no-cache">
+ <meta http-equiv="cache-control" content="no-cache">
+ <style>
+ <!--
+ BODY    {background: #888888;}
+ BODY,TD {font-size: 9pt; font-family: Verdana; font-weight: normal; color: #000000}
+ A       {color: #2B4F9E; text-decoration: none}
+ A:Hover {color: #2B4Fff; text-decoration: underline}
+ -->
+ </style>
+ </head>
+<body>
+  <center>
+  <table><tr><td>
+<h2>Security Clearance Manager - Groups</h2>
+<h4><a href="<<ci_approot+'/security/users.html'>>">Users</a> | Groups</h4>
+<a href="addgroup.html">Add a new Group</a>
+</td></tr><tr><td>
+
+<<
+for name=clear_groups rowname=x do
+ if isfile(ci_approot+'/security/photos/'+lower(x[2])) then
+  p=ci_img(ci_approot+'/security/photos/'+lower(x[2]),32,32,'FALSE')
+ else
+  p=ci_img(ci_approot+'/security/group.jpg',32,32,'FALSE')
+ /if
+ display '
+    <table cellpadding="0" cellspacing="0" border="0">
+     <tr>
+      <td>
+       <div style="width: 40px; height: 40px; background: #ffffff; padding: 8px; border: 2px solid #888888; border-right: none; text-align: center;">
+        <table width=100% height=100% cellpadding=0 cellspacing=0 border=0>
+         <tr>
+          <td align=center valign=center>'+p+'</td>
+         </tr>
+        </table>
+       </div>
+      </td>
+      <td>
+       <div style="width: 420px; height: 40px; background: #e4e4e4; padding: 8px; border: 2px solid #888888; border-left: none; text-align: center;">
+        <table width=100% height=100% cellpadding=0 cellspacing=0 border=0>
+         <tr>
+          <td align="left" valign=center>
+<a href="editgroup.html" name="record" value="'+x[1]+'">'+x[2]+'</a><br>'+x[3]+'
+          </td>
+         </tr>
+        </table>
+       </div>
+      </td>
+     </tr>
+
+
+ ' /display
+/for
+>>
+    </table>
+ </center>
+</body>
+</html>

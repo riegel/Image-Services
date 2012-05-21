@@ -1,0 +1,138 @@
+<<
+expand file="/system/clearimage/DLL.lib" /expand
+
+#
+if samelogin()<>'TRUE' then goto sysstartlink+"/login.html" /if
+/#
+
+# Handle what happens if destination is empty upon entry /#
+if iconpage="/system/desktop/index.html" or iconpage="/system/desktop/aestivaindex.html" then fm_chroot="/" fm_permissions="YYYYYYYYYYYYYYYY"/if
+if isdir(destination) then else destination="ERROR" /if
+if destination="ERROR" or destination="" then
+ destination="/"
+ if iconpage="ERROR" then
+  destination=dirname(page)+"users/public/"
+  fm_chroot=dirname(page)+"users/public/"
+  fm_permissions="NNNNNYNNNNNNNNNN"
+ /if
+/if
+
+
+if fm_prefs="" or fm_prefs="ERROR" then
+ # fm_prefs should be set upon entry to this page, if not set them to the defaults
+   It may be set by some other application i.e. with fm_chroot locked into the users home directory /#
+ fm_prefs[1]="FALSE"         # Select Multiple                           /#
+ fm_prefs[2]="FALSE"         # Auto Upload/Edit on Click                 /#
+ fm_prefs[3]="TRUE"          # Confirm Deletes                           /#
+ fm_prefs[4]="TRUE"          # Confirm File Area Changes                 /#
+ fm_prefs[5]="TRUE"          # Confirm Pastes                            /#
+ fm_prefs[6]="100"           # Search Files under this file size (in KB) /#
+ fm_prefs[7]="TRUE"         # Show .TEMP Files                          /#
+ fm_prefs[8]=dirname(page)   # File Manager Application Directory        /#
+ fm_prefs[9]="800"           # Width of text editor window               /#
+ fm_prefs[10]="600"          # Height of text editor window              /#
+/if
+
+if ci_approot="ERROR" then ci_approot="/apps/imageservices/" /if
+expand file=ci_approot+"getimage.lib" /expand
+expand file="filemanager.lib" /expand
+
+
+fm_list=""
+fm_pathlink=getlink("path.html")
+fm_selectmode="single"
+fm_detailslink=getlink("details.html")
+fm_browselink=getlink("browse.html")
+
+# if fm_programparams comes in set then use its values (they will be set by a link)
+  [1] - /path/to/file  (destination and chroot)
+  [2] - searchstring   (ci_searchtext)
+  [3] - calling program
+  [4] - WindowWidth
+  [5] - WindowHeight
+  [6] - Permissions
+/#
+if fm_programparams<>"ERROR" then
+ ci_temp=listtorow(fm_programparams,"|")
+ destination=ci_temp[1]
+ fm_chroot=ci_temp[1]
+ fm_searchtext=ci_temp[2]
+ ciwid=ci_temp[4]+2
+ cihgt=ci_temp[5]-19
+ fm_programparams="ERROR"
+/if
+if length(fm_permissions)<>16 then fm_permissions="NNNNNNNNNNNNNNNN" /if
+
+# Permissions Key
+
+ 01 - Execute Code
+ 02 - Edit Files
+ 03 - Change File Area
+ 04 - View Private Files
+ 05 - Download Private Files
+ 06 - Add Files
+ 07 - Add Directories
+ 08 - Delete Files
+ 09 - Delete Directories
+ 10 - Rename/Move Files
+ 11 - Show Hidden Files
+ 12 - Search For Text
+ 13 - 
+ 14 -
+ 15 -
+ 16 -
+/#
+#
+if isdir(fm_chroot) then else goto "FOLDERMISSING.HTML" /if
+/#
+
+
+
+if destination='/system/clearimage/libraries/' then clear_editlibrary="TRUE" /if
+>>
+<html>
+<<#
+<head>
+<title>File Manager <<replace(reverse(chopright(reverse(left(fm_chroot,length(fm_chroot)-1)),"/")),"/","")>></title>
+<<fm_style>>
+</head>
+<body>
+
+     +---------------------------+
+     |path.html                  |
+     |-------------+-------------|
+     |browse.html  |details.html |
+     |             |             |
+     |             |             |
+     |             |             |
+     |             |             |
+     |-------------|             |
+     |toolbar.html |             |
+     +-------------+-------------+
+   <frame src="'+getlink('bar.html')+'" name="tpbr" scrolling="no" marginwidth="0" marginheight="0">
+
+
+ /#
+
+display '
+  <head>
+   <title>'+domainname+'</title>
+  </head>
+
+  <frameset rows="30,*" border="0" frameborder="0" border="0" framespacing="0">
+   <frame src="'+getlink('path.html')+'" name="path" scrolling="no" marginwidth="0" marginheight="0">
+   <frameset cols="30%,70%"  frameborder="3" border="3" framespacing="4">
+    <frameset rows="*,24" border="0" frameborder="0" border="0" framespacing="0">
+     <frame src="'+getlink('browse.html')+'" name="browse" scrolling="yes" marginwidth="0" marginheight="0">
+     <frame src="'+getlink('toolbar.html')+'" name="btbr" scrolling="no" marginwidth="0" marginheight="0">
+    </frameset>
+    <frame src="'+getlink('details.html')+'" name="details" marginwidth="0" marginheight="0" scrolling="yes" onload="if(top.frames['+"'"+'browse'+"'"+'].detailsinit){top.frames['+"'"+'browse'+"'"+'].detailsinit();}">
+   </frameset>
+  </frameset>
+  <noframes>NO FRAMES</noframes>
+
+' /display
+
+fm_firstdisplay="TRUE"
+>>
+</html>

@@ -1,0 +1,86 @@
+# START Code Executed from this library /#
+  if clear_editlibrary="TRUE" then temp=loadfunctions('/system/clearimage/libraries') /if
+  if ci_starttrial="TRUE" then
+   ci_prefs[1,15]=NETWEB('clearimageonline.com/cgi-bin/start/NOSESSION/apps/imageservices/pushkey.html?dom='+postprep(domainname)+'&emailaddress='+postprep(ci_prefs[1,23]),50000,15,'GET','','')
+   copy ci_prefs[1,15] to file=ci_approot+domainname+"registration.key" /copy
+   ci_temp=sysfixprivate(ci_approot+domainname+"registration.key")
+   ci_starttrial="ERROR"
+   copy ci_prefs to file=ci_approot+"prefs.csv" ts="," /copy
+  /if
+  ci_stats="ERROR"
+  ci_temp=ci_timing("B1")
+  if ci_approot="ERROR" then ci_approot="/apps/imageservices/" /if
+
+# Code to SAVE/LOAD/CREATE the prefs file /#
+  if ci_form="yes" or ci_prefsin="ERROR" then
+   if isfile(ci_approot+"prefs.csv") then
+    if ci_form="yes" then
+     # SAVE   /#
+
+     if isinteger(ci_prefs[1,16]) then else ci_prefs[1,16]="15000" /if
+     copy ci_prefs to file=ci_approot+"prefs.csv" ts="," /copy
+     if ci_prefs[1,15]<>"" then
+      copy ci_prefs[1,15] to file=ci_approot+domainname+"registration.key" /copy
+      ci_temp=sysfixprivate(ci_approot+domainname+"registration.key")
+     /if
+    else
+     # LOAD   /#
+     copy file=ci_approot+"prefs.csv" ts="," to ci_prefs /copy
+     copy file=ci_approot+domainname+"registration.key" to ci_temp /copy # Registration Key               /#
+     ci_prefs[1,15]=ci_temp
+     if isinteger(ci_prefs[1,16]) then else ci_prefs[1,16]="15000" /if
+    /if
+   else
+    ci_prefs=""
+    if right(sysstartname,4)=".exe" then ci_temp=".exe" else ci_temp="" /if
+    ci_prefs[1,1]=htmlos.conf.DocumentPath      # DELETE # Document Root                                   /#
+    ci_prefs[1,2]="80"                                   # Global image quality                            /#
+    ci_prefs[1,3]="70"                                   # Icon opacity                                    /#
+    ci_prefs[1,4]="TEMP"                                 # Name used in temporarily resized images         /#
+    ci_prefs[1,5]="LOGIN"                                # Name used to identify LOGIN images              /#
+    ci_prefs[1,6]="identify"+ci_temp                     # Name of the identify application                /#
+    ci_prefs[1,7]="convert"+ci_temp                      # Name of the convert application                 /#
+    ci_prefs[1,8]="composite"+ci_temp                    # Name of the composite application               /#
+    ci_prefs[1,9]=ci_approot+"upload.html"               # Upload Application (can be changed to anything) /#
+    ci_prefs[1,10]="cgi-bin"                    # DELETE # Name of CGI-BIN                                 /#
+    ci_prefs[1,11]=".TEMP/"                              # Path to temp files                              /#
+    ci_prefs[1,12]="TRUE"                                # Name files to eliminate web browser cacheing    /#
+    ci_prefs[1,13]=sysstartlink                 # DELETE #                                                 /#
+    ci_prefs[1,14]=htmlos.conf.HTMLOSPrivate+'/'# DELETE # CGI root PRIVATE FILES                          /#
+                   copy
+                    file=ci_approot+domainname+"registration.key" to ci_temp
+                   /copy
+    ci_prefs[1,15]=ci_temp                               # Registration Key                                /#
+    ci_prefs[1,16]="15000"                               # Timeout Delay in Milliseconds                   /#
+    ci_prefs[1,17]="0"                                   # Debug                                           /#
+    ci_prefs[1,18]="0"                                   # Convert non-web graphics to a web format        /#
+    ci_prefs[1,19]="JPEG"                                # Preferred web format for non web files          /#
+    ci_prefs[1,20]="0"                                   # Resize (scale down) all originals to ...        /#
+    ci_prefs[1,21]="1000"                                # Original Resize Width                           /#
+    ci_prefs[1,22]="1000"                                # Original Resize Height                          /#
+    ci_prefs[1,23]=""                                    # Email Address associated with registration      /#
+    ci_prefs[1,24]='/apps/imageservices/edittext.html'   # Text editor                                     /#
+    ci_prefs[1,25]=''                                    # Set to TRUE if Image Verify test was passed     /#
+    ci_prefs[1,26]=''                                    # Set to TRUE if using Image Services Login Page  /#
+    ci_prefs[1,27]=''                                    # Set to TRUE if using Progress Bar with uploads  /#
+    ci_prefs[1,28]='USERLIST'                            # USERLIST or USERNAME                            /#
+    ci_prefs[1,29]=''                                    # SMTP Server                                     /#
+    ci_prefs[1,30]=''                                    # SMTP Server Port                                /#
+    ci_prefs[1,31]=''                                    # SMTP Server Authentication type                 /#
+    ci_prefs[1,32]=''                                    # SMTP User Name                                  /#
+    ci_prefs[1,33]=''                                    # SMTP Password                                   /#
+    ci_prefs[1,34]=''                                    # SMTP Domain Name                                /#
+    ci_prefs[1,35]='JPEG GIF PNG'                        # Allowed Image Formats (web formats)             /#
+    ci_prefs[1,36]=htmlos.conf.SystemDirectory  # DELETE # Path To System Folder                           /#
+    ci_prefs[1,37]='../../../../../bin/'                 # Path to bin files                               /#
+    copy ci_prefs to file=ci_approot+"prefs.csv" ts="," /copy
+    ci_temp="ERROR"
+   /if
+   ci_prefsin="TRUE"
+  /if
+  ci_form="ERROR"
+  ci_root=htmlos.conf.DocumentPath # this starts as htmlos.conf.DocumentPath, if file is private then it should be htmlos.conf.HTMLOSPrivate+'/' /#
+  ci_registered=ci_regok(ci_prefs[1,15])
+  ci_temp=ci_timing("E1")
+# if count(getenv('HTTP_USER_AGENT'),'iPhone')>0 then isretina='TRUE' else isRetina='FALSE' /if /#
+# END Code Executed from this library /#

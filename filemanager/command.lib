@@ -1,0 +1,656 @@
+function action(cmd) locals a,b,c,temp,icon1,icon2,icon3,icon4 do
+
+
+
+ temp=""
+ if left(cmd,6)="DELETE" then
+  if cmd="DELETE" then cmd=cmd+fm_list /if
+  temp=delete(cmd)
+  if temp="ERROR" then fm_list="" fm_copy=checkpaste(fm_copy) /if
+ elif left(cmd,6)="RENAME" then
+  if cmd="RENAME" then cmd=cmd+fm_list /if
+  temp=rename(cmd)
+ elif left(cmd,5)="UNZIP" then
+  temp=unzip(fm_list)
+ elif left(cmd,9)="STARTLINK" then
+  if cmd="STARTLINK" then cmd=cmd+fm_list /if
+  temp=changestartlink(cmd,"STARTLINK")
+ elif left(cmd,15)="REMOVESTARTLINK" then
+  if cmd="REMOVESTARTLINK" then cmd=cmd+fm_list /if
+  temp=changestartlink(cmd,"REMOVESTARTLINK")
+ elif left(cmd,7)="PRIVATE" then
+  if cmd="PRIVATE" then cmd=cmd+fm_list /if
+  temp=changearea(cmd,"PRIVATE")
+ elif left(cmd,6)="PUBLIC" then
+  if cmd="PUBLIC" then cmd=cmd+fm_list /if
+  temp=changearea(cmd,"PUBLIC")
+ elif left(cmd,4)="COPY" then
+  if fm_list="" or fm_list="ERROR" then
+   temp=sendpage('No Files Selected to copy.')
+  else
+   temp="ERROR"
+  /if
+  fm_copy="|"+destination+fm_list
+ elif left(cmd,5)="PASTE" then
+  if cmd="PASTE" then fm_copy=checkpaste(fm_copy) cmd="PASTE"+fm_copy /if
+  temp=pastefiles(cmd)
+ elif left(cmd,4)="PACK" then
+  # Ok lets pack it. /#
+  temp=pack(destination,fm_list)
+ elif left(cmd,6)="UNPACK" then
+  # Ok lets unpack it. /#
+  a=destination+replace(fm_list,"|","")
+  c=viewpack(a)
+  temp=sendpage(c)
+ elif left(cmd,8)="SECURITY" then
+  # Ok lets set security. /#
+  temp=sendpage(security(destination,fm_list))
+ /if
+ if temp="ERROR" or temp="" then temp="ERROR" /if
+ return temp /return
+/function
+
+
+
+function unzip(list) locals temp_file,temp_path,temp_dir,temp do
+ if count(fm_list,"|")>1 then return "ERROR" /return /if
+ if right(list,4)<>'.zip' then return "ERROR" /return /if
+ temp_file=replaceall(fm_list,"|","")
+ temp_path=ci_getpath(destination+temp_file)
+ temp_dir=reverse(chopleft(reverse(temp_path),'/'))
+ if isfile(temp_path) then
+  if isdir(left(destination+temp_file,length(destination+temp_file)-4)) then
+   temp= '<h3>'+temp_file+'</h3><br>Unzip Failure! Possible already unzipped before.<br><a href="details.html" name="fm_command" value="ERROR">(Exit)</a>'
+  else
+   temp=syscall('FileManager:UNZIP','/usr/bin/unzip '+temp_path+' -d '+temp_dir)
+   temp='<h3>'+temp_file+'</h3><br>Unzip Done!<br><a href="details.html" name="fm_command" value="ERROR">(Done)</a>'
+  /if
+ else
+  temp= '<h3>'+temp_file+'</h3><br>Unzip Failure! ZIP file is missing.<br><a href="details.html" name="fm_command" value="ERROR">(Exit)</a>'
+ /if
+ return sendpage(temp) /return
+/function
+
+
+
+
+function changestartlink(list,area) locals temp do
+ if left(list,length(area)+5)=area+"-YES|" or fm_prefs[4]="FALSE" then
+  list=replace(list,area+"-YES|","")
+  temp=changestartlinknow(list,area)
+  return "ERROR" /return
+ /if
+ if left(list,length(area)+1)=area+"|" then
+  list=replace(list,area+"|",area+"-YES|")
+  if area='STARTLINK' then
+   temp="Make Start Link?<br>&nbsp;<br>"
+  else
+   temp="Remove Start Link?<br>&nbsp;<br>"
+  /if
+  temp=temp+'<a href="'+page+'" name="fm_command" value="'+list+'">(Yes)</a>  or  <a href="details.html" name="fm_command" value="ERROR">(No)</a>'
+  temp=sendpage(temp)
+ else
+  temp="ERROR"
+ /if
+ return temp /return
+/function
+
+function changestartlinknow(list,area) locals x,fname do
+ fname=replace(chopright(list,"|"),"|","")
+ if area="startlink" then
+  temp=addstartlink(destination+fname,'','')
+ elif area="removestartlink" then
+  temp=removestartlink(destination+fname)
+ /if
+ # Change done do next in list /#
+ if count(list,"|")=0 then
+  return "ERROR" /return
+ else
+  list=replace(chopleft(list,"|"),"|","")
+ /if
+ return changestartlinknow(list,area) /return
+/function
+
+
+
+
+
+
+
+function viewpack(f) locals a,b,c,icon1,icon2,icon3,icon4,temp,x do
+ b=filepacklist(f)
+ c='<table border=0 width=100% cellpadding=1 cellspacing=2 valign=top align=center>'
+ c=c+'<tr><td colspan="3" align="center"><b>Contents of '+replace(fm_list,"|","")+'</b></td></tr>'
+ for name=b rowname=x do
+  icon1='' icon2='' icon3='' icon4=''
+  x[3]=chopright(size(x[3]),' ')
+  if right(x[2],3)="DIR" then icon3='<img src="/apps/imageservices/images/dir-small.gif" border="0" width="12" height="12">' x[3]='' /if
+  if right(x[2],7)="PRIVATE" then icon3='<img src="/apps/imageservices/filemanager/images/private.gif" border="0" width="12" height="12">' /if
+  if left(x[2],1)="c"  then x[2]=right(x[2],length(x[2])-1) icon1='<img src="/apps/imageservices/filemanager/images/compressed.gif" border="0" width="12" height="12">' icon2='' /if
+  if left(x[2],1)="x"  then x[2]=right(x[2],length(x[2])-1) icon1='<img src="/apps/imageservices/filemanager/images/private.gif" border="0" width="12" height="12">' icon2='' /if
+  if left(x[2],2)="xc" then x[2]=right(x[2],length(x[2])-2) icon1='<img src="/apps/imageservices/filemanager/images/private.gif" border="0" width="12" height="12">' icon2='<img src="/apps/imageservices/filemanager/images/compressed.gif" width="12" height="12">' /if
+  c=c+'<tr><td bgcolor="#ffffff">'+icon3+'</td><td bgcolor="#eeeeee">'+x[1]+'</td><td bgcolor="#eeeeee">'+x[3]+'</td></tr>'
+ /for
+ c=c+'</table>'
+ return c /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+function pack(dest,list) locals files,x,y,n,temp,a,b,q do
+ files=list
+ if left(files,1)="|" then files=right(files,length(files)-1) /if
+ files=split(files,"|")
+ x="ERROR"
+ for name=files rowname=y do
+  if right(y[1],1)="/" then
+   b=filelistR(dest+y[1])
+   if b="ERROR" then else if x="ERROR" then x=b else x=append(x,b) /if /if
+  else
+   if x="ERROR" then x=dest+y[1] else x=append(x,dest+y[1]) /if
+   if right(y[1],4)='.htm' or right(y[1],5)='.html' then
+    # I have a secured file, need to include .scram file in pack. /#
+    q=ci_extract(dest+y[1])
+    if isfile(q[1]+q[2]+'.scram') then x=append(x,q[1]+q[2]+'.scram') /if
+   /if
+  /if
+ /for
+ if rows(files)=1 then
+  n=ci_extract(dest+replace(replace(list,'/',''),'|',''))
+  n=n[1,1]+n[2,1]+'.pak'
+ else
+  n=dest+'archive.pak'
+ /if
+ if isfile(n) then n=reverse(replace(reverse(n),'kap.','kap.1'))
+  if isfile(n) then n=reverse(replace(reverse(n),'kap.1','kap.2'))
+   if isfile(n) then n=reverse(replace(reverse(n),'kap.2','kap.3'))
+    if isfile(n) then n=reverse(replace(reverse(n),'kap.3','kap.4'))
+     if isfile(n) then n=reverse(replace(reverse(n),'kap.4','kap.5'))
+      if isfile(n) then n=reverse(replace(reverse(n),'kap.5','kap.6'))
+       if isfile(n) then n=reverse(replace(reverse(n),'kap.6','kap.7'))
+        if isfile(n) then n=reverse(replace(reverse(n),'kap.7','kap.8'))
+         if isfile(n) then n=reverse(replace(reverse(n),'kap.9','kap.9'))
+         /if
+        /if
+       /if
+      /if
+     /if
+    /if
+   /if
+  /if
+ /if
+ if dest='/' then
+  for name=x rownum=y do
+   x[1,y]=replace(x[1,y],'//','/')
+   if left(x[1,y],1)='/' then x[1,y]=right(x[1,y],length(x[1,y])-1) /if
+  /for
+ else
+  for name=x rownum=y do
+   x[1,y]=replace(x[1,y],dest,"")
+  /for
+ /if
+ a=filepack(n,x,dest,'y','','')
+ if isfile(n) then
+  temp=sendpage('Files Packed Successfully<hr width="50%">'+n)
+ else
+  temp=sendpage('There was a problem packing the files'+ci_table(a)+"filepack('"+n+"',x,"+dest+",'y','','')")
+ /if
+ return temp /return
+ return sendpage('n='+n+'<hr>dest='+dest+'<hr>x='+ci_table(x)) /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function filelistR(dest) locals x,y,z,a,b do
+ z=filelist(dest)
+ if z="" then return dest /return /if
+ x="ERROR"
+ for name=z rowname=y do
+  if (y[4]="DIR" and y[1]+'/'=ci_prefs[1,11]) then else
+
+
+   if y[4]="DIR" then
+    b=filelistR(dest+y[1]+'/')
+    if b="ERROR" then else if x="ERROR" then x=b else x=append(x,b) /if /if
+   else
+    if x="ERROR" then x=dest+y[1] else x=append(x,dest+y[1]) /if
+   /if
+
+
+  /if
+ /for
+ return x /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function checkpaste(files) locals newlist do
+ if left(files,1)="|" then files=right(files,length(files)-1) /if
+ files=split(files,"|")
+ newlist=""
+ for name=x value=2 to rows(files) do
+  if isfile(files[1,1]+files[1,x]) or isdir(files[1,1]+files[1,x]) then newlist=newlist+"|"+files[1,x] /if
+  temp=temp+"|"+files[1,x]
+ /for
+ if newlist<>"" then  newlist="|"+files[1,1]+newlist /if
+ return newlist /return
+/function
+
+
+
+
+
+function rename(list) locals ftype,dir,icon,temp do
+
+ if count(fm_list,"|")>1 then return "ERROR" /return /if
+ fm_rename=replaceall(fm_list,"|","")
+
+ if count(fm_rename,".")=0 then ftype="pict" else ftype=ci_filetype(fm_rename) /if
+ if right(fm_rename,1)="/" then dir="TRUE" else dir="FALSE" /if
+ if dir="TRUE" then icon='<img src="'+ci_approot+'images/dir-large.gif" border="0" width="20" height="20" align="center">' else icon='<img src="'+ci_approot+'images/'+ftype+'-large.gif" border="0" width="20" height="20" align="center">' /if
+ fm_rename=replaceall(fm_rename,"/","")
+
+ temp=""
+ if fm_message<>"ERROR" and fm_message<>"" then temp=temp+fm_message+"<br>&nbsp;<br>" fm_message="ERROR" /if
+ temp=temp+'<form action="rename" name="renameform" method="post" accept-charset="utf-8">'+icon+'&nbsp;<input type=text name="fm_rename" width="20" style="width: 70%;" value="'+replaceall(fm_rename,'%20',' ')+'"><br>&nbsp;<br><input type="submit" name="fm_button" value="Rename">&nbsp;&nbsp;<input type="submit" name="fm_button" value="Cancel"></form>'
+ return sendpage(temp) /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function sendpage(text) do
+ if text='ERROR' then 
+  return text /return
+ else
+  return '
+   <head>
+   '+fm_style+'
+   </head>
+   <body bgcolor="#cccccc">'+lf+
+   fm_displaypagebegin()+'
+   <table width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+     <td align="center" valign="top"><div id="filedetails"><table width="70%" bgcolor="#ffffff" style="border: 1px solid #999999;" cellpadding="20" cellspacing="20"><tr><td align="center">'+lf+text+lf+'</td></tr></table></div></td>
+    </tr>
+   </table>
+   </body>'
+  /return
+ /if
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function pastenow(src,dest,list) locals x,fname,i,t,f,e do
+ fname=replace(chopright(list,"|"),"|","")
+ i=sysmd(dest)
+ i=fileinfo(src+fname)
+ if pastenowglobal="ERROR" then pastenowglobal="" /if
+ if i[4]="DIR" then
+  if src+fname=left(dest+fname,length(src)) then
+   pastenowglobal=pastenowglobal+"FAILED to MOVE FOLDER ("+src+fname+") TO ("+dest+fname+") (Can't move a folder into itself.)<br>"
+  else
+   temp=movefolder(src+fname,dest+fname)
+   pastenowglobal=pastenowglobal+"MOVE FOLDER ("+src+fname+") TO ("+dest+fname+")<br>"
+  /if
+ else
+  if src+fname=dest+fname then
+   if count(fname,".")=0 then
+    e=""
+    f=fname
+   else
+    e=reverse(chopright(reverse(fname),"."))
+    f=reverse(replace(chopleft(reverse(fname),"."),".",""))
+   /if
+   if count(f,"_copy")>0 then t=replace(chopleft(f,"_copy"),"_copy","") t=t+1 f=f+t else f=f+"_copy" /if
+   while (isfile(dest+f+e)) do
+    t=replace(chopleft(f,"_copy"),"_copy","") t=t+1 f=chopright(f,"_copy")+t
+   /while
+   t=f+e
+  else
+   t=fname
+  /if
+  pastenowglobal=pastenowglobal+"MOVE FILE ("+src+fname+") TO ("+dest+t+")<br>"
+  temp=ci_cpfile(src+fname,dest+t)
+
+ /if
+
+
+ # Move done do next in list /#
+ if count(list,"|")=0 then
+  return "ERROR" /return
+ else
+  list=replace(chopleft(list,"|"),"|","")
+ /if
+ return pastenow(src,dest,list) /return
+/function
+
+
+
+
+
+function pastefiles(list) locals temp,icon,shortname,listtable do
+ temp=''
+ if left(list,10)="PASTE-YES|" or fm_prefs[5]="FALSE" then
+  list=replace(list,"PASTE-YES|","")
+  temp=pastenow(replace(chopright(list,"|"),"|",""),destination,replace(chopleft(list,"|"),"|",""))
+  return "ERROR" /return
+ /if
+ if left(list,6)="PASTE|" then
+  list=replace(list,"PASTE|","")
+  if left(list,length(destination))=destination and 1=0 then
+   temp=sendpage('Paste failed. Source and destination are the same.')
+  else
+   if destination=fm_chroot then
+    icon='<img src="images/home-large.gif" border="0" width="20" height="20" align="center">'
+    shortname="Home"
+   else
+    icon='<img src="'+ci_approot+'images/dir-large.gif" border="0" width="20" height="20" align="center">'
+    shortname=replace(reverse(chopright(replace(reverse(replaceall(destination+"/","//","/")),"/",""),"/")),"/","")
+   /if
+
+   temp=littlelist(replace(chopleft(list,"|"),"|",""))+'<br>&nbsp;<br><img src="images/paste.gif" border="0" width="24" height="24" align="center">&nbsp;Paste&nbsp;into&nbsp;'+icon+'&nbsp;'+shortname+'<br>&nbsp;<br>'
+
+
+
+   temp=temp+'<a href="'+page+'" name="fm_command" value="PASTE-YES|'+list+'">(Yes)</a>  or  <a href="details.html" name="fm_command" value="ERROR">(No)</a>'
+   temp=sendpage(temp)
+  /if
+ else
+  temp=sendpage('Clipboard is Empty.'+list)
+ /if
+ return temp /return
+/function
+
+
+function changearea(list,area) locals temp do
+ if left(list,length(area)+5)=area+"-YES|" or fm_prefs[4]="FALSE" then
+  list=replace(list,area+"-YES|","")
+  temp=changeareanow(list,area)
+  return "ERROR" /return
+ /if
+ if left(list,length(area)+1)=area+"|" then
+  list=replace(list,area+"|",area+"-YES|")
+  temp="Make files/folders "+lower(area)+".<br>&nbsp;<br>"
+  temp=temp+'<a href="'+page+'" name="fm_command" value="'+list+'">(Yes)</a>  or  <a href="details.html" name="fm_command" value="ERROR">(No)</a>'
+  temp=sendpage(temp)
+ else
+  temp="ERROR"
+ /if
+ return temp /return
+/function
+
+
+function changeareanow(list,area) locals x,fname do
+ fname=replace(chopright(list,"|"),"|","")
+ if area="private" then
+  temp=sysfixprivate(destination+fname)
+ elif area="public" then
+  temp=sysfixpublic(destination+fname)
+ /if
+ # Change done do next in list /#
+ if count(list,"|")=0 then
+  return "ERROR" /return
+ else
+  list=replace(chopleft(list,"|"),"|","")
+ /if
+ return changeareanow(list,area) /return
+/function
+
+
+
+
+
+
+
+function deletefiles(fm_trash,confirm) locals x,fname do
+ fname=replace(chopright(fm_trash,"|"),"|","")
+ if confirm="FALSE" or right(fname,1)<>"/" then # No confirmation test, or not a directory just delete it /#
+  if fname="/system/" or fname="/clear"+"image/" or fname=ci_approot or fname="/apps/" or fname="/upload/" then
+   # system files, don't delete /#
+  else
+   # delete fname here /#
+   fm_list=replace(fm_list,"|"+replace(fname,destination,""),"")
+   x=ci_killall(destination+fname)
+  /if
+ else # Need to confirm directory deletes /#
+  return fm_trash /return
+ /if
+ # Delete done do next in list /#
+ if count(fm_trash,"|")=0 then
+  return "ERROR" /return
+ else
+  fm_trash=replace(chopleft(fm_trash,"|"),"|","")
+ /if
+ # If global confirms are required then get next confirmation otherwise just keep deleting /#
+ if fm_prefs[3]="TRUE" then
+  return fm_trash /return
+ else
+  return deletefiles(fm_trash,"TRUE") /return
+ /if
+/function
+
+
+function delete(fm_trash) locals first,donext,temp,fname,shortname,ftype,icon,dir,temp4,rmdirs,x do
+
+t=fm_trash
+ if right(destination,4)='.pak' or right(destination,3)='.bb' then
+  temp=sendpage('Delete Not Allowed. Package files can only be read.')
+  return temp /return
+ /if
+ if fm_list="" or fm_list="ERROR" then
+  temp=sendpage('No Files Selected to Delete.')
+  return temp /return
+ /if
+ if left(fm_trash,7)="DELETE|" then                       # Initial entry to delete                           /#
+  fm_trash=replace(fm_trash,"DELETE|","")
+  first="TRUE"
+ /if
+ if left(fm_trash,11)="DELETE-ALL|" then                  # User Said Yes, go ahead and delete                /#
+  fm_trash=replace(fm_trash,"DELETE-ALL|","DELETE-YES|")
+  fm_prefs[3]="FALSE"
+ /if
+ if left(fm_trash,12)="DELETE-YES1|" then                  # User Said Yes, go ahead and delete                /#
+  fm_trash=replace(fm_trash,"DELETE-YES1|","")
+ /if
+ if left(fm_trash,11)="DELETE-YES|" then                  # User Said Yes, go ahead and delete                /#
+  fm_trash=replace(fm_trash,"DELETE-YES|","")
+  fm_trash=deletefiles(fm_trash,"FALSE")
+  if fm_trash="ERROR" then return "ERROR" /return /if
+ /if
+ if left(fm_trash,13)="DELETE-CHECK|" then                # Need a secondary confirmation (possibly a folder) /#
+  fm_trash=replace(fm_trash,"DELETE-CHECK|","")
+  first="FALSE"
+ /if
+
+
+if auth(9)=0 then
+ rmdirs=split(fm_trash,"|")
+ fm_trash=""
+ tt=ci_table(rmdirs)
+ for name=rmdirs rowname=x do
+  if right(x[1],1)="/" then else fm_trash=fm_trash+x[1]+'|' /if
+ /for
+ if right(fm_trash,1)="|" then fm_trash=left(fm_trash,length(fm_trash)-1) /if
+/if
+
+
+ fname=replace(chopright(fm_trash,"|"),"|","")
+ if count(fname,".")=0 then ftype="pict" else ftype=ci_filetype(fname) /if
+ if right(fname,1)="/" then dir="TRUE" else dir="FALSE" /if
+ if dir="TRUE" then icon='<img src="'+ci_approot+'images/dir-large.gif" border="0" width="20" height="20" align="center">' else icon='<img src="'+ci_approot+'images/'+ftype+'-large.gif" border="0" width="20" height="20" align="center">' /if
+ shortname=replace(reverse(chopright(replace(reverse(replaceall(fname+"/","//","/")),"/",""),"/")),"/","")
+ temp=''
+
+
+ if first="TRUE" and count(fm_trash,"|")>0 then
+  icon='<img src="images/copy.gif" border="0" width="12" height="12" align="center">'
+  if auth(9)=1 then
+   temp=temp+'Delete these?<br>&nbsp;<br>'+icon+'&nbsp;'+(count(fm_trash,"|")+1)+' Files/Folders<br>&nbsp;<br>'
+  else
+   temp=temp+'Delete these?<br>&nbsp;<br>'+icon+'&nbsp;'+(count(fm_trash,"|")+1)+' Files<br>&nbsp;<br>'
+  /if
+  if right(fname,1)="/" then
+   donext="DELETE-YES1|"
+  else
+   donext="DELETE-YES|"
+  /if
+ else
+  donext="DELETE-YES|"
+  if dir="TRUE" then
+   temp=temp+'Delete Folder?<br>&nbsp;<br>'+icon+"&nbsp;"+shortname+'<br>&nbsp;<br>'
+  else
+   temp=temp+'Delete File?<br>&nbsp;<br>'+icon+"&nbsp;"+shortname+'<br>&nbsp;<br>'
+  /if
+ /if
+
+ temp=temp+'<a href="'+getlink(page,"fm_command",donext+fm_trash)+'">(Yes)</a>, '
+ temp=temp+'<a href="'+getlink(page,"fm_command","DELETE-ALL|"+fm_trash)+'">(Yes to All)</a>, '
+ temp=temp+'or  <a href="'+getlink(page,"fm_command","ERROR")+'">(No)</a>'
+
+
+ temp=sendpage(temp)
+ return temp /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+function ci_killall(source) locals temp,c do
+
+ for name=c value=1 to 5 do
+  if isdir(source) then
+   temp=ci_REMOVEDIRECTORY(source)
+  /if
+ /for
+ 
+ for name=c value=1 to 5 do
+  if isfile(source) then
+   temp=ci_rmfile(source)
+  /if
+ /for
+ return '' /return
+
+/function
+
+
+
+function ci_REMOVEDIRECTORY(source) locals x,y,temp do
+  if isdir(source) then
+   if version<4 then
+    x=filelist(source)
+   else
+    x=filelistall(source)
+   /if
+   for name=x rowname=y do
+    if y[4]="DIR" then
+     temp=ci_killall(source+"/"+y[1])
+     temp=fileremovedir(source+"/"+y[1])
+     temp=fileremovedir(source+"/"+y[1])
+    else
+     if version<4 then
+      temp=ci_rmfile(source+"/"+y[1])
+     else
+      if x[6]='y' then
+       temp=ci_rmfile(source+"/"+y[1])
+      else
+       temp=SYSFIXNAME( source , y[1] , aestivafilename(y[1])+'DELETE' )
+       temp=ci_rmfile(source+"/"+aestivafilename(y[1])+'DELETE' )
+      /if
+     /if
+    /if
+   /for
+   temp=fileremovedir(source)
+   temp=fileremovedir(source)
+  else
+   temp=ci_rmfile(source)
+  /if
+ return temp /return
+/function

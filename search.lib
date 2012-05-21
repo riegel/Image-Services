@@ -1,0 +1,127 @@
+function dbsimplesearchsort(db,search,st,en,f,ord) locals x,y,s,g,srgl,h do
+ search=replaceall(search,"&quot;",'"')
+ copy file=db+".conf" ts="," to x /copy
+ s="ERROR" g="ERROR" h='RECORD'
+ for name=x rowname=y do
+  if y[2]="GRP" then
+   g="TRUE"
+   srgl=searchparse(search,y[1],y[3])
+   s=dbsearchsort(db,srgl,st,en,f,ord)
+  else
+   h=merge(h,y[1])
+  /if
+ /for
+ if g="ERROR" then
+  # No group field found we will make one /#
+  g=""
+  for name=x rowname=y do
+   g=g+y[1]+","
+  /for
+  g=left(g,length(g)-1)
+  srgl=searchparse(search,'',g)
+  s=dbsearchsort(db,srgl,st,en,f,ord)
+ /if
+ return append(h,s) /return
+/function
+
+
+
+
+
+
+function dbsimplesearch(db,search,st,en) locals x,y,s,g,srgl do
+ search=replaceall(search,"&quot;",'"')
+ copy file=db+".conf" ts="," to x /copy
+ s="ERROR" g="ERROR"
+ for name=x rowname=y do
+  if y[2]="GRP" then
+   g="TRUE"
+   srgl=searchparse(search,y[1],y[3])
+   s=dbsearch(db,srgl,st,en)
+  /if
+ /for
+ if g="ERROR" then
+  # No group field found we will make one /#
+  g=""
+  for name=x rowname=y do
+   g=g+y[1]+","
+  /for
+  g=left(g,length(g)-1)
+  srgl=searchparse(search,'',g)
+  s=dbsearch(db,srgl,st,en)
+ /if
+ return s /return
+/function
+
+function searchparse(search,sf,sl) locals s.and,ss.and,s.or,ss.or,srch,temp do
+ s.and="ERROR" s.or="ERROR"
+ # Right away deal with comma's and spaces between quotes /#
+ search=replaceall(search,","," ")
+ search=replaceall(search," -","+-")
+ if count(search,'"')>0 then search=stripquotes(search) /if
+ # First Split out AND's /#
+ search=replaceall(search," AND ","+")
+ s.and=split(search,"+")
+ srch=""
+ for name=s.and rowname=ss.and do
+   # Next Split out OR's /#
+   ss.and[1]=replaceall(ss.and[1]," OR "," ")
+   ss.and[1]=trim(ss.and[1])
+   exa=0 if left(ss.and[1],1)="-" then srch=srch+" NOT(" exa=1 ss.and[1]=replace(ss.and[1],"-","") /if
+   s.or=split(ss.and[1]," ")
+   if rows(s.or)>1 then
+    # display "s.or"+ci_table(s.or) /display /#
+    for name=s.or rowname=ss.or do
+      exo=0 if left(ss.or[1],1)="-" then srch=srch+" NOT(" exo=1 ss.or[1]=replace(ss.or[1],"-","") /if
+      ss.or[1]=replaceall(ss.or[1],"[COMMA]"," ")
+      if count(ss.or[1],"[SPACE]")>0 or sf='' then
+       temp=replaceall(ss.or[1],"[SPACE]"," ")
+       srch=srch+grpsrch(temp,"~~",sl)
+      else
+       srch=srch+'('+sf+'="'+ss.or[1]+'")'
+      /if
+      if exo=1 then srch=trim(srch)+")" /if
+      srch=srch+" OR "
+    /for
+    srch=reverse(replace(reverse(srch),"RO ",""))
+   else
+    ss.and[1]=replaceall(ss.and[1],"[COMMA]"," ")
+    if count(ss.and[1],"[SPACE]")>0 or sf='' then
+     temp=replaceall(ss.and[1],"[SPACE]"," ")
+     srch=srch+grpsrch(temp,"~~",sl)
+    else
+     srch=srch+'('+sf+'="'+ss.and[1]+'")'
+    /if
+   /if
+   if exa=1 then srch=trim(srch)+")" /if
+   srch=srch+" AND "
+ /for
+ srch=reverse(replace(reverse(srch),"DNA ",""))
+ return trim(srch) /return
+/function
+
+function grpsrch(src,opr,srl) locals x,y,text do
+ x=split(srl,",")
+ text="("
+ for name=x rowname=y do
+  text=text+"("+y[1]+opr+'"'+src+'") OR '
+ /for
+ text=reverse(replace(reverse(text),"RO ",""))
+ text=trim(text)+")"
+ return text /return
+/return
+/function
+
+function stripquotes(text) locals x,y,z,zz do
+   text=replaceall(text,"&quot;",'"')
+   while locate(text,'"')>0 do
+    x=locate(text,'"')
+    y=locate(middle(text,x+1,length(text)),'"')+x
+    if y=0 then y=x /if
+    z=middle(text,x,y)
+    zz=replaceall(z,'"',"")
+    zz=replaceall(zz," ","[SPACE]")
+    text=replace(text,z,zz)
+   /while
+   return text /return
+/function

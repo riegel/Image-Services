@@ -1,0 +1,49 @@
+<<
+if ci_approot="ERROR" then ci_approot="/apps/imageservices/" /if
+expand file=ci_approot+"getimage.lib" /expand
+
+
+fm_prefs[1]="FALSE"         # Select Multiple                           /#
+fm_prefs[2]="FALSE"         # Edit Text Files Inline if true use popup  /#
+fm_prefs[3]="TRUE"          # Confirm Deletes                           /#
+fm_prefs[4]="TRUE"          # Confirm File Area Changes                 /#
+fm_prefs[5]="TRUE"          # Confirm Pastes                            /#
+fm_prefs[6]="100"           # Search Files under this file size (in KB) /#
+fm_prefs[7]="FALSE"         # Show .TEMP Files                          /#
+fm_prefs[8]="/apps/imageservices/filemanager/" # File Manager Application Directory        /#
+fm_prefs[9]="900"           # Width of text editor window               /#
+fm_prefs[10]="650"          # Height of text editor window              /#
+
+
+fm_permissions="YYYYYYYYYYYYYYYY"
+#               0000000001111111 /#
+#               1234567890123456 /#
+# Permissions Key
+ 01 - Execute Code
+ 02 - Edit Files
+ 03 - Change File Area
+ 04 - View Private Files
+ 05 - Download Private Files
+ 06 - Add Files
+ 07 - Add Directories
+ 08 - Delete Files
+ 09 - Delete Directories
+ 10 - Rename/Move Files
+ 11 - Show TEMP Files
+ 12 - Fork Code
+ 13 - Search For Text
+ 14 -
+ 15 -
+ 16 -
+/#
+
+>>
+<html>
+<head>
+<title>File Manager - Preferences</title>
+<<fm_style>>
+</head>
+<body>
+Coming Soon
+</body>
+</html>

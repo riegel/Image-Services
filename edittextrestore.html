@@ -1,0 +1,73 @@
+<html>
+<<
+display '
+<head>
+<title>'+ci_title(ci_textpath)+': NoteWeb</title>
+<style>
+<!--
+TEXTAREA {font-family: Lucida Console,Courier,Times; font-size: 8pt;}
+BODY {font-size: 8pt; font-family: Verdana; font-weight: normal; color: #000000; background-color:#e7f6eb; margin:0;padding:0;border:0;}
+TD {font-size: 8pt; font-family: Verdana; font-weight: normal; color: #000000;}
+A  {color: blue; text-decoration: none}
+A:Hover {color: #FF8400; text-decoration: underline}
+A.header  {color: white; text-decoration: none}
+A.header:Hover {color: #FF8400; text-decoration: underline}
+-->
+</style>
+' /display
+>>
+<body>
+<<
+ ci_pathtable=ci_extract(ci_textpath)
+ ci_temp=ci_pathtable[1]+ci_pathtable[6]+ci_pathtable[2]+ci_prefs[1,4]+"BAK"
+ ci_pathcounter="ERROR"
+ ci_backups="ERROR"
+ for name=x value=0 to 9 do
+  if isfile(ci_temp+x+ci_pathtable[4]) then
+   ci_pathcounter=x+1
+   if ci_backups="ERROR" then 
+    ci_backups=fileinfo(ci_temp+x+ci_pathtable[4])
+   else
+    append fileinfo(ci_temp+x+ci_pathtable[4]) to ci_backups /append
+   /if
+  /if
+ /for
+ if ci_pathcounter>9 or ci_pathcounter="ERROR" then ci_pathcounter=0 /if
+ ci_backups=sortcol(ci_backups,3)
+
+
+ append fileinfo(ci_textpath) to ci_backups /append
+
+
+display '<table width="100%" cellpadding="2" cellspacing="0" border="0">
+<tr><td bgcolor="#BCF4CB">View</td><td bgcolor="#BCF4CB">Restore</td><td bgcolor="#BCF4CB">Size</td><td bgcolor="#BCF4CB">Date</td></tr>
+' /display
+
+
+if ci_backups<>"ERROR" then
+ for name=ci_backups rowname=x do
+  if count(x[1],"TEMPBAK")=0 then 
+
+   display '<tr><td>-</td><td><a href="edittext.html" name="ci_textpath" value="'+ci_textpath+'">Return Without Restore</td><td>'+x[2]+'</td><td>'+x[3]+'</td></tr>' /display
+
+  else
+
+   display '<tr><td><a href="preview.html" name="ci_restore" value="'+x[1]+'|'+ci_textpath+'">View</a></td><td><a href="doit" name="ci_restore" value="'+x[1]+'|'+ci_textpath+'">Use Restore Point '+replace(chopright(replaceall(chopleft(x[1],"TEMPBAK"),"TEMPBAK",""),"."),".","")+'</a></td><td>'+x[2]+'</td><td>'+x[3]+'</td></tr>' /display
+
+  /if
+ /for
+/if
+display '</table>' /display
+>>
+</body>
+</html>
+<<overlay doit
+ci_temp=split(ci_restore,"|")
+ci_restore=ci_temp[1,1]
+ci_textpath=ci_temp[1,2]
+copy file=ci_textpath to file=ci_textpath+".0" /copy
+copy file=ci_restore to file=ci_textpath /copy
+copy file=ci_textpath+".0" to file=ci_restore /copy
+ci_temp=ci_rmfile(ci_textpath+".0")
+goto "edittext.html"
+>>

@@ -1,0 +1,112 @@
+<html>
+<head>
+<<fm_style>>
+<style>
+ BODY           {width:100%; height:28px; background-color: #bbbbbb; padding: 0; margin: 0; border: none; overflow:hidden; border-bottom: 1px solid #777777;}
+ #search        {position: absolute; right:  30px; top: 3px; width: 140px;}
+ #spinner       {position: absolute;  left:   2px; top: 2px;}
+ #thefilepath   {position: absolute;  left:  25px; top: 4px;}
+ #desktoplink   {position: absolute; right:  10px; top: 9px;}
+ #referencelink {position: absolute; right: 180px; top: 9px;}
+
+
+ #execute000    {position: absolute; right:185px; bottom:0; width: 140px;}
+ #execute001    {position: absolute; right:350px; bottom:0; width: 140px;}
+ #execute002    {position: absolute; right:515px; bottom:0; width: 140px;}
+
+ .close         {position: absolute; left:2px; color:#eeeeee;  border-radius: 3px; border: 1px solid #999999; background-color: #dddddd; padding:0; }
+
+
+
+
+.ellipsis {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	-o-text-overflow: ellipsis; }
+
+
+.button   {border-radius: 5px; border: 1px solid #777777; border-bottom-right-radius:0; border-bottom-left-radius:0; padding:3px; padding-left:20px; text-align:left; color:#777777;}
+.button a {color: #777777;}
+.select   {background-color: #ffffff; border-bottom: 1px solid #ffffff;}
+.deselect {background-color: #dddddd; border-bottom: 1px solid #777777;}
+
+
+td a img  {margin:0; padding:0; padding-right: 5px; display: inline-table;}
+td a span {margin:0; padding:0;}
+
+
+
+</style>
+<script>
+
+   function closeIt(elem){
+    elem.className = elem.className.replace(/deselect/,'')
+    elem.className = elem.className.replace(/select/,'')
+    elem.className += " deselect";
+    elem.innerHTML='';
+   }
+
+   function select(elem){
+    var t0=document.getElementById('execute000');
+    var t1=document.getElementById('execute001');
+    var t2=document.getElementById('execute002');
+
+
+
+
+
+   t0.className  = t0.className.replace(/\bdeselect\b/,'')
+   t0.className  = t0.className.replace(/\bselect\b/,'')
+   t0.className += " deselect";
+
+   t1.className  = t1.className.replace(/\bdeselect\b/,'')
+   t1.className  = t1.className.replace(/\bselect\b/,'')
+   t1.className += " deselect";
+
+   t2.className  = t2.className.replace(/\bdeselect\b/,'')
+   t2.className  = t2.className.replace(/\bselect\b/,'')
+   t2.className += " deselect";
+
+if(elem){
+   elem.className  = elem.className.replace(/\bdeselect\b/,'')
+   elem.className  = elem.className.replace(/\bselect\b/,'')
+   elem.className += " select";
+}
+
+
+
+   }
+
+</script>
+</head>
+<body>
+ <a href="javascript:top.frames['browse'].pathclick('/');" id="spinner"><img src="<<if spinneroff='ERROR' then display '/apps/imageservices/filemanager/images/spinneroff.png' /display else display spinneroff /display /if>>" border="0" width="24" height="24"></a>
+ <div id="thefilepath"><img src="/apps/imageservices/filemanager/images/midnext.png" border="0"></div>
+<<
+ if iconpage="/system/desktop/index.html" or iconpage="/system/desktop/aestivaindex.html" then
+  display ' <div id="desktoplink"><a href="icons.html" target="details"><img src="/apps/imageservices/filemanager/images/desk.gif" border="0" width="12" height="12" alt="Desktop"></a></div>' /display
+ else
+  display ' <div id="desktoplink"><a href="'+iconpage+'" target="_top"><img src="/apps/imageservices/filemanager/images/desk.gif" border="0" width="0" height="0" alt="Reload"></a></div>' /display
+ /if
+
+#
+ display ^ <div id="referencelink"><a ^+ci_parsehref(^href="/apps/reference/index.html" popup="1050,800"^)+^><img src="/apps/imageservices/filemanager/images/reference.png" border="0" width="12" height="12" alt="Reload"></a></div>^ /display
+/#
+
+
+
+ display '
+   <form action="browse.html" target="browse" method="post" name="searchform" onsubmit="document.forms.searchform.fm_searchtext.value=this.thebigsearch.value;" accept-charset="utf-8">
+    <input id="search" type="search" name="thebigsearch" value="SEARCH" autosave="clearimage" results="10" align="middle" onfocus="if(this.value=='+"'"+'SEARCH'+"'"+') {this.value='+"''"+';}" onblur="if(this.value=='+"''"+') {this.value='+"'"+'SEARCH'+"'"+';}">
+    <input type="hidden" name="fm_searchtext">
+   </form>'
+ /display
+>>
+
+<div id="execute000" class="button ellipsis deselect"></div>
+<div id="execute001" class="button ellipsis deselect"></div>
+<div id="execute002" class="button ellipsis deselect"></div>
+
+</body>
+</html>

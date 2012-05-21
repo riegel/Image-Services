@@ -1,0 +1,67 @@
+<<
+expand file="filemanager.lib" /expand
+expand file="command.lib" /expand
+
+
+
+if left(fm_list,1)='|' then fm_list=replace(fm_list,'|','') /if
+fm_list='|'+fm_list
+
+
+
+
+
+
+if fm_command='security' then goto '/apps/imageservices/security/editfile.html' /if
+
+
+
+if right(fm_list,1)="|" then fm_list=left(fm_list,length(fm_list)-1) /if
+
+temp=action(fm_command)
+if temp="ERROR" then
+ if left(fm_command,6)='DELETE' or left(fm_command,5)='PASTE' or left(fm_command,10)='PUBLIC-YES' or left(fm_command,11)='PRIVATE-YES' then
+  fm_cmd='reload'
+  goto "details.html"
+ else
+  fm_cmd='browse'
+  goto "details.html"
+ /if
+/if
+>>
+<html>
+<head>
+ <<fm_style>>
+ <script>
+  onload=top.frames['browse'].detailsinit;
+ </script>
+</head>
+<<temp>>
+</html>
+<<overlay rename
+if replaceall(fm_rename,"/","")=replaceall(replaceall(fm_list,"|",""),"/","") or fm_rename="" or fm_button="Cancel" then fm_command="ERROR" goto page /if
+if isfile(destination+fm_rename) then fm_message="File name already exists." goto page /if
+
+fm_rename=replaceall(fm_rename,' ','%20')
+fm_message=filenameverify(fm_rename)
+if fm_message="" then
+ fm_message="File Renamed"
+ if isfile(destination+replace(fm_list,"|","")) then
+  temp=ci_mvfile(destination+replace(fm_list,"|",""),destination+fm_rename)
+  fm_command="ERROR"
+  fm_list="|"+fm_rename
+  goto page
+ /if
+ if isdir(destination+replace(fm_list,"|","")) then
+  temp=movefolder(destination+replace(fm_list,"|",""),destination+fm_rename+"/")
+  temp=ci_killall(destination+replace(fm_list,"|",""))
+  fm_command="ERROR"
+  fm_list="|"+fm_rename
+  goto page
+ /if
+ fm_command="ERROR"
+ goto page
+else
+ goto page
+/if
+>>

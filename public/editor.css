@@ -1,0 +1,30 @@
+   TEXTAREA       {font-family: Lucida Console,Courier,Times; font-size: 8pt;}
+   BODY           {background-image: url('/apps/imageservices/images/editorbg.png'); background-repeat: repeat-x; background-color: #a0b0b1; font-size: 8pt; font-family: Verdana; font-weight: normal; color: #000000; margin:0;padding:0;border:0; overflow: hidden;}
+   TD             {font-size: 8pt; font-family: Verdana; font-weight: normal; color: #000000;}
+   A              {color: #555555; text-decoration: none}
+   A:Hover        {color: #000000; text-decoration: underline}
+   A.header       {color: white; text-decoration: none}
+   A.header:Hover {color: #dddddd; text-decoration: underline}
+   .red           {color: #F00;}
+
+   #header        {margin:2px ;padding:0;border:0;padding-left:20px;}
+   #editor        {position: absolute; bottom: 2px; left: 4px;}
+   #search        {position: absolute; top: 2px; right: 8px; margin: 0; padding: 0;}
+   #savebutton    {position: absolute; top: 2px; left: 25px;}
+   #rarrow        {position: absolute; top: 5px; right: 195px; display: none;}
+   #larrow        {position: absolute; top: 5px; right: 220px; display: none;}
+   #lessit        {position: absolute; top: 5px; right: 245px; display: block;}
+   #sbg           {position: absolute; top: 3px; right: 193px; display: none;}
+   #searchtext    {width: 185px;}
+   #message       {position: absolute; top: 5px; left: 77px;}
+   #isajax        {position: absolute; top: 5px; left: 177px;}
+   #currenttime   {position: absolute; top: 5px; right: 240px; font-size:11px;}
+   #dosplit       {position: absolute; top: 7px; left: 80px;}
+   #txtarea       {border:0; height:610px; width:880px; margin:0;}
+   #splittxtarea  {border:0; display: none;}
+   #prefsouter    {position: absolute; top: 5px; left: 21px; width:400px; height: 300px; background-color: #ffffff; border: 1px solid #888888; z-index: 100;  display: none; padding: 0; margin: 0; overflow: none;}
+   #prefsmenu     {background-image:url('/apps/imageservices/images/dragbar.png'); position: relative; top: 0; left: 0; height: 15px; padding: 0; margin: 0; padding-left: 3px; padding-top: 3px; border-bottom: 1px solid #888888;}
+   #prefslist     {position: relative; top: 0; left: 0; width: 400px; height: 257px; background-color: #eeeeee; overflow: auto;}
+   #prefsbutton   {position: relative; top: 0; left: 0; height: 20px; padding: 0; margin: 0; padding-left: 3px; padding-top: 3px; background-color: #bbbbbb; border-top: 1px solid #888888;}
+   #prefslink     {position: absolute; top: 3px; left: 5px;}
+   #filefield     {display: none; }

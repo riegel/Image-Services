@@ -1,0 +1,9 @@
+<<
+if left(fm_list,1)='|' then fm_list=right(fm_list,length(fm_list)-1) /if
+if right(fm_list,1)='|' then fm_list=left(fm_list,length(fm_list)-1) /if
+temp=replaceall('|'+fm_list,'|','|'+destination)
+if left(temp,1)='|' then temp=right(temp,length(temp)-1) /if
+ci_imagepath=temp
+temp='ERROR'
+goto ci_prefs[1,9]
+>>

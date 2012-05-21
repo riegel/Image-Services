@@ -1,0 +1,1317 @@
+`function LIactionthis(z,i) locals text,d,dl do
+ text=''
+ if z[4,1]='DIR' or (z[8]="BB" and z[6]<>"C") then
+  # OPEN          /#
+  text=text+'<li><a href="browse.html" target="browse" name="destination" value="'+z[1]+'|both"><img src=images/folder-small.gif border=0 width=12 height=12 align=center>&nbsp;Open</a></li>'+lf
+ /if
+
+ if meta(i,"code")<>"TRUE" and z[5]="PUBLIC" and z[2]<>0  and z[6]<>'C' then
+  if z[8]='txt' or z[8]='table' or z[8]='pict' then
+  # VIEW          /#
+  text=text+'<li><a href="view.html" name="viewfile" value="'+z[1]+'"><img src=images/view.gif border=0 width=12 height=12 align=center>&nbsp;View</a></li>'+lf
+  /if
+ /if
+
+ if meta(i,"code")='TRUE' and auth(1)=1 and z[6]<>'C' then
+  # EXECUTE       /#
+  text=text+'<li><a href="run.html" name="runfile" value="'+z[1]+'"><img src=images/run.gif border=0 width=12 height=12 align=center>&nbsp;Run</a></li>'+lf
+#
+  text=text+'<li><a href="'+syspublicurl+'/cgi-bin/go'+z[1]+'"><img src=images/run.gif border=0 width=12 height=12 align=center>&nbsp;Run PERL</a></li>'+lf
+/#
+  if meta(i,"startlink")<>'TRUE' then
+   # MAKE STARTLINK  /#
+   text=text+'<li><a href="command.html" name="fm_command" value="STARTLINK"><img src=images/greenlight.gif border=0 width=12 height=12 align=center>&nbsp;Make&nbsp;Startlink</a></li>'+lf
+  else
+   # MAKE STARTLINK  /#
+   text=text+'<li><a href="command.html" name="fm_command" value="REMOVESTARTLINK"><img src=images/redlight.gif border=0 width=12 height=12 align=center>&nbsp;Remove&nbsp;Startlink</a></li>'+lf
+  /if
+
+ /if
+
+ if z[8]="TABLE"  and z[6]<>'C' then
+  # TABLE         /#
+  text=text+'<li>'+ci_csv(z[1],fm_prefs[8]+"filemanager.html","",'<img src=images/table.gif border=0 width=12 height=12 align=center>&nbsp;Edit',fm_searchtext,"TRUE")+'</li>'+lf
+ /if
+
+ if z[8]='txt' and auth(2)=1 then
+  if count(z[1],'.pak/')=0 and count(z[1],'.bb/')=0 then
+  # EDIT          /#
+    text=text+'<li>'+ci_edit2(z[1],900,650,'<img src=images/edit.gif border=0 width=12 height=12 align=center>&nbsp;Edit',"TRUE")+'</li>'+lf
+  /if
+ /if
+
+
+
+ if z[6]="C" or auth(2)=0 then
+  # VIEW READ-ONLY/#
+  text=text+'<li>'+ci_edit2(z[1],900,650,'<img src=images/view.gif border=0 width=12 height=12 align=center>&nbsp;Read',"TRUE")+'</li>'+lf
+ /if
+
+
+if (z[5]="PUBLIC" and auth(3)=1 and z[6]<>"C") or (meta(i,"PUBLIC")>0 and z="ERROR") then
+ # MAKE PRIVATE  /#
+ text=text+'<li><a href="command.html" name="fm_command" value="PRIVATE"><img src=images/private.gif border=0 width=12 height=12 align=center>&nbsp;Make&nbsp;Private</a></li>'+lf
+/if
+
+if (z[5]="PRIVATE" and auth(3)=1 and z[6]<>"C") or (meta(i,"PRIVATE")>0 and z="ERROR") then
+ # MAKE PUBLIC   /#
+ text=text+'<li><a href="command.html" name="fm_command" value="PUBLIC"><img src=images/eye.gif border=0 width=12 height=12 align=center>&nbsp;Make&nbsp;Public</a></li>'+lf
+/if
+
+ # DELETE
+if z[6]<>"C" or z="ERROR" then
+ text=text+'<li><a href="command.html" name="fm_command" value="DELETE"><img src=images/trash.gif border=0 width=12 height=12 align=center>&nbsp;Delete</a></li>'+lf
+/if /#
+
+ if (z[4,1]='DIR' or (z[8]="BB" and z[6]<>"C")) then
+ elif z[2]<>0 and z<>"ERROR" then
+  # DOWNLOAD      /#
+  if (count(z[1],z[7])=0) and z[7]<>"UNK" then d=z[1]+z[7] else d=z[1] /if
+  text=text+'<li><a href="'+filepushlink(ci_approot+"download.html","ci_pushfile",z[1],d)+'"><img src=images/download.gif border=0 width=12 height=12 align=center>&nbsp;Download</a></li>'+lf
+ /if
+
+if z[6]<>"C" then
+ # UPLOAD        /#
+ text=text+'<li><a '+ci_parsehref(^href="^+ci_prefs[1,9]+^" name="ci_imagepath" value="^+z[1]+^" popup="600,275"^)+'><img src=images/upload.gif border=0 width=12 height=12 align=center>&nbsp;Upload</a></li>'+lf
+/if
+
+# CUT and COPY /#
+if auth(10)=1 then
+ if z[6]<>'C' then
+  text=text+'<li><a href="javascript:top.frames['+"'"+'browse'+"'"+'].docommand('+"'"+'COPY'+"'"+');"><img src=images/copy.gif border=0 width=12 height=12 align=center>&nbsp;Copy</a></li>'+lf
+ /if
+/if
+
+if z[6]<>'C' and auth(10)=1 and z<>"ERROR" then
+ # RENAME         /#
+ text=text+'<li><a href="command.html" name="fm_command" value="RENAME"><img src=images/rename.gif border=0 width=12 height=12 align=center>&nbsp;Rename</a></li>'+lf
+/if
+
+
+
+
+if right(z[1],3)='.ps' or right(z[1],4)='.eps' then
+ # POSTSCRIPT           /#
+ text=text+'<li><a href="showps.html" name="fm_psfile" value="'+z[1]+'"><img src="/apps/imageservices/images/pict-small.gif" border="0" width="12" height="12" align=center>&nbsp;Postscript</a></li>'+lf
+/if
+
+
+
+
+if z[6]<>'C' and auth(10)=1 then
+ # PACK           /#
+ text=text+'<li><a href="command.html" name="fm_command" value="PACK"><img src="/apps/imageservices/images/bb-small.gif" border="0" width="12" height="12" align=center>&nbsp;Pack</a></li>'+lf
+/if
+
+ if z[8]='zip' then
+  # unzip          /#
+  text=text+'<li><a href="command.html" name="fm_command" value="UNZIP"><img src="/apps/imageservices/images/zip-small.gif" border="0" width="12" height="12" align=center>&nbsp;unzip</a></li>'+lf
+ /if
+
+
+
+
+if (z[8]="BB" and z[6]<>"C") then
+ # UNPACK         /#
+ text=text+'<li><a href="command.html" name="fm_command" value="UNPACK"><img src="/apps/imageservices/images/bb-small.gif" border="0" width="12" height="12" align=center>&nbsp;UnPack</a></li>'+lf
+/if
+
+if meta(i,"SECURED")<>"ERROR" then
+ # EDIT SECURITY  /#
+ text=text+'<li><a href="command.html" name="fm_command" value="SECURITY"><img src=images/prefs.gif border=0 width=12 height=12 align=center>&nbsp;Edit&nbsp;Security</a></li>'+lf
+/if
+
+
+
+return text /return
+/function
+
+
+function actionthis(z,i) locals text do
+ text=LIactionthis(z,i)
+ if text="" then else
+  text='<ul class="actionthis">'+text+'</ul>'
+ /if
+ return text /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+fm_icons=^
+ <style>
+#sddm
+{	margin: 0;
+	padding: 0;
+	z-index: 30}
+
+#sddm li
+{	margin: 0;
+	padding: 0;
+	list-style: none;
+	float: left;
+}
+
+#sddm li a
+{	display: block;
+	margin: 0 1px 0 0;
+	padding: 4px 10px;
+	width: 120px;
+	background: #fff;
+	color: #000;
+	text-align: left;
+	text-decoration: none}
+
+#sddm li a:hover {}
+
+#sddm div
+{	position: absolute;
+	visibility: hidden;
+	margin: 0;
+	padding: 0;
+	background: #EAEBD8;
+	border: 1px solid #5970B2}
+
+	#sddm div a
+	{	position: relative;
+		display: block;
+		margin: 0;
+		padding: 5px 10px;
+		width: 120px;
+		white-space: nowrap;
+color: #777;
+		text-align: left;
+		text-decoration: none;
+		background: #eeeeee;
+	}
+
+	#sddm div a:hover
+	{	background: #3875D7;
+		color: #FFF}
+
+
+#sddm #m3 a {width:300px; overflow:hidden;}
+
+ </style>
+ <script>
+// Copyright 2006-2007 javascript-array.com
+
+var timeout	= 500;
+var closetimer	= 0;
+var ddmenuitem	= 0;
+
+// open hidden layer
+function mopen(id)
+{	
+	// cancel close timer
+	mcancelclosetime();
+
+	// close old layer
+	if(ddmenuitem) ddmenuitem.style.visibility = 'hidden';
+
+	// get new layer and show it
+	ddmenuitem = document.getElementById(id);
+	ddmenuitem.style.visibility = 'visible';
+
+}
+// close showed layer
+function mclose()
+{
+	if(ddmenuitem) ddmenuitem.style.visibility = 'hidden';
+}
+
+// go close timer
+function mclosetime()
+{
+	closetimer = window.setTimeout(mclose, timeout);
+}
+
+// cancel close timer
+function mcancelclosetime()
+{
+	if(closetimer)
+	{
+		window.clearTimeout(closetimer);
+		closetimer = null;
+	}
+}
+
+// close layer when click-out
+document.onclick = mclose; 
+ </script>
+^
+
+
+
+
+
+
+
+
+
+
+function icons() locals icons,dcat,dtop,x,temp do
+    copy file="/system/icons.sys" ts="," to icons /copy
+    icons=sortcol(icons,4)
+    dcat=icons[4,1]
+    dtop=''
+
+
+      dtop=dtop+'
+      <fieldset style="margin:20px;"><legend>Special Apps</legend>
+       <div style="float: left; width: 160px; height: 30px; border: none; margin: 2px; text-align: left; padding: 2px; font-size: 11pt;">
+        <table><tr><td valign="center">
+         <a href="'+iconpage+'" border="0">'+ci_img('/apps/imageservices/images/aestiva.png','24','24','FALSE')+'</a></td><td valign="center">Aestiva Desktop
+        </td></tr></table>
+       </div>
+
+       <div style="float: left; width: 160px; height: 30px; border: none; margin: 2px; text-align: left; padding: 2px; font-size: 11pt;">
+        <table><tr><td valign="center">
+         <a href="/system/panel/sysenc.html" border="0">'+ci_img('/apps/imageservices/images/aestiva.png','24','24','FALSE')+'</a></td><td valign="center">Kill All Sessions
+        </td></tr></table>
+       </div>'
+
+
+     if recentfilelist<>'' and recentfilelist<>'ERROR' then
+      dtop=dtop+^
+       <div style="float: left; width: 160px; height: 30px; border: none; margin: 2px; text-align: left; padding: 2px; font-size: 11pt;">
+        <table><tr><td valign="center">^+ci_img('/system/clearimage/icons/filemanager45x45.png','24','24','FALSE')+^</td><td valign="center">
+         <ul id="sddm">
+          <li><a href="#" 
+           onmouseover="mopen('m3')" 
+           onmouseout="mclosetime()">Recent Files</a>
+           <div id="m3" 
+            onmouseover="mcancelclosetime()" 
+            onmouseout="mclosetime()">^
+            for name=recentfilelist rowname=x do
+             dtop=dtop+ci_edit2(x[1],800,600,'<img src="/apps/imageservices/images/txt-small.gif" width="12" height="12" border="0" style="margin-right: 5px;">'+x[1],'TRUE')
+            /for
+         dtop=dtop+^
+            </div>
+           </li>
+          </ul>
+         <div style="clear:both"></div>
+        </td></tr></table>
+       </div>^
+     /if
+
+
+
+
+
+    if isdir('/apps/route') then
+      dtop=dtop+'
+       <div style="float: left; width: 160px; height: 30px; border: none; margin: 2px; text-align: left; padding: 2px; font-size: 11pt;">
+        <table><tr><td valign="center">
+         '+ci_edit2('/apps/route/index.html',900,650,ci_img('/system/clearimage/icons/route45x45.png','24','24','FALSE'),"TRUE")+^</td><td valign="center">
+         <ul id="sddm">
+          <li><a href="#" 
+           onmouseover="mopen('m1')" 
+           onmouseout="mclosetime()">Edit Routes</a>
+           <div id="m1" 
+            onmouseover="mcancelclosetime()" 
+            onmouseout="mclosetime()">^
+            temp=filelist('/apps/route/controllers')
+            temp=sortcol(temp,1)
+            for name=temp rowname=x do
+             if right(x[1],8)='.overlay' then
+              if x[5]<>'PRIVATE' then sysfixprivate('/apps/route/controllers/'+x[1]) /if
+              dtop=dtop+ci_edit2('/apps/route/controllers/'+x[1],800,600,'<img src="/apps/imageservices/images/txt-small.gif" width="12" height="12" border="0" style="margin-right: 5px;">'+x[1],'TRUE')
+             /if
+            /for
+         dtop=dtop+^
+            </div>
+           </li>
+          </ul>
+         <div style="clear:both"></div>
+        </td></tr></table>
+       </div>^
+    /if
+
+    if isdir('/system/clearimage/libraries') then
+      dtop=dtop+'
+       <div style="float: left; width: 160px; height: 30px; border: none; margin: 2px; text-align: left; padding: 2px; font-size: 11pt;">
+        <table><tr><td valign="center">
+         '+ci_edit2('/system/clearimage/DLL.lib',900,650,ci_img('/system/clearimage/icons/clearimage45x45.png','24','24','FALSE'),"TRUE")+^</td><td valign="center">
+         <ul id="sddm">
+          <li><a href="#" 
+           onmouseover="mopen('m2')" 
+           onmouseout="mclosetime()">Edit DLL's</a>
+           <div id="m2" 
+            onmouseover="mcancelclosetime()" 
+            onmouseout="mclosetime()">^
+            temp=filelist('/system/clearimage/libraries')
+            temp=sortcol(temp,1)
+            for name=temp rowname=x do
+             if right(x[1],4)='.lib' then
+              if x[5]<>'PRIVATE' then sysfixprivate('/system/clearimage/libraries/'+x[1]) /if
+              dtop=dtop+ci_edit2('/system/clearimage/libraries/'+x[1],800,600,'<img src="/apps/imageservices/images/txt-small.gif" width="12" height="12" border="0" style="margin-right: 5px;">'+x[1],'TRUE')
+             /if
+            /for
+         dtop=dtop+^
+            </div>
+           </li>
+          </ul>
+         <div style="clear:both"></div>
+        </td></tr></table>
+       </div>^
+    /if
+
+
+
+
+    dtop=dtop+'</fieldset><fieldset style="margin:20px;"><legend>Desktop Apps</legend>'
+
+    for name=icons rowname=x do
+     if x[2]<>'' then
+      if isfile(x[2]) then else x[2]='/system/desktop/images/missing_icon.gif' /if
+      dtop=dtop+'
+       <div style="float: left; width: 160px; height: 30px; border: none; margin: 2px; text-align: left; padding: 2px; font-size: 11pt;">
+        <table><tr><td valign="center">
+         <a href="'+x[1]+'" border="0">'+ci_img(x[2],'24','24','FALSE')+'</a></td><td valign="center">'+x[3]+'
+        </td></tr></table>
+       </div>'
+     /if
+    /for
+    dtop=dtop+'</fieldset>'
+    temp=dtop
+    return temp /return
+/function
+
+
+
+
+
+
+function showdetails(fm_list) locals dest,z,temp,temp1,fm_path,i,a.icons,dtop,x,dcat do
+ if left(fm_list,1)="|" then fm_list=right(fm_list,length(fm_list)-1) /if
+ if right(fm_list,1)="|" then fm_list=left(fm_list,length(fm_list)-1) /if
+ temp=""
+ dest=split(fm_list,"|")
+ if rows(dest)<2 then
+  if dest="ERROR" or dest="" then
+
+
+
+
+
+   if clear_user='admin' then
+    dtop=icons()
+    temp=dtop
+   else
+    copy file="welcome.txt" to temp /copy
+    copy file=fm_chroot+"welcome.txt" to temp1 /copy
+    if temp1<>"ERROR" then
+     temp=temp1+'<hr>'+temp
+    /if
+    temp=sendblock(temp)
+   /if
+
+
+
+
+
+   # temp="Make a Selection" /#
+  else
+   fm_path=replaceall(destination+"/"+dest[1,1],"//","/")
+   z=merge(pakfileinfo(fm_path),ci_fileinfo(fm_path)) z[12]=destination z[13]=dest
+   if z[4]="DIR" and z[6]<>'C' then z[2]=dirsize(fm_path) elif z[4]="DIR" then z[2]="-" /if
+   i=findmetadata(z)
+   temp=temp+showicon(z,i)
+   temp=temp+'
+    <br>
+    <div class=big>'+unpostprep(replaceall(z[13],"/",""))+'</div><br>
+    <table>'
+   # Add Kind /#
+   if z[8]="PICT" and z[2]<>0 then
+    temp=temp+'
+     <tr>
+      <td align=right>Kind:</td>
+      <td align=left>'+meta(i,'TYPE')+' Image File</td>
+     </tr>
+     <tr>
+      <td align=right>Dimensions:</td>
+      <td align=left>'+meta(i,'WIDTH')+'x'+meta(i,'HEIGHT')+' pixels</td>
+      </tr>'
+   elif z[2]=0 then
+    temp=temp+'
+     <tr>
+      <td align=right>Placeholder:</td>
+      <td align=left>'+z[9]+'</td>
+     </tr>'
+   else
+    if meta(i,'CODE')='FALSE' then z[9]="HTML Document" /if
+    if meta(i,'SCRAMBLED')='TRUE' then z[9]='Scrambled '+z[9] /if
+    if meta(i,'SECURED')='TRUE' then z[9]='Protected '+z[9] /if
+    temp=temp+'
+     <tr>
+      <td align=right>Kind:</td>
+      <td align=left>'+z[9]+'</td>
+     </tr>'
+   /if
+
+   # Add Size, Modified, and Access /#
+   temp=temp+'
+     <tr>
+      <td align=right>Size:</td>
+      <td align=left>'+size(z[2])+'</td>
+     </tr>
+     <tr>
+      <td align=right>Modified:</td>
+      <td align=left>'+dadate(z[3])+'</td>
+     </tr>
+     <tr>
+      <td align=right>Access:</td>
+      <td align=left>'+z[5]+'</td>
+     </tr>'
+
+
+   # Add URL, and or StartLink /#
+   if z[5]="PUBLIC" and z[6]<>'C' then
+    temp=temp+'
+     <tr>
+      <td align=right>Public URL:</td>
+      <td align=left><a href="'+syspublicurl+fileprep(z[1])+'">'+fileprep(replaceall(z[13],"/",""))+'</a></td>
+     </tr>'
+   /if
+   if meta(i,'STARTLINK')='TRUE' then
+    temp=temp+'
+     <tr>
+      <td align=right>Startlink:</td>
+      <td align=left><a exithref="'+getstartlink(z[1])+'">~'+replaceall(z[13],"/","")+'</a></td>
+     </tr>'
+   /if
+
+   if meta(i,'TITLE')<>'ERROR' then
+    temp=temp+'
+     <tr>
+      <td align=right>Title:</td>
+      <td align=left><input type="text" value="'+meta(i,'TITLE')+'"></td>
+     </tr>'
+   /if
+   if meta(i,'DESCRIPTION')<>'ERROR' then
+    temp=temp+'
+     <tr>
+      <td align=right>Description:</td>
+      <td align=left><textarea>'+meta(i,'DESCRIPTION')+'</textarea></td>
+     </tr>'
+   /if
+
+
+   temp=temp+'</table>'
+   temp='<table><tr><td>'+actionthis(z,i)+'</td><td align="center">'+temp+'</td></tr></table>'
+  /if
+ else
+  temp=littlelist(fm_list)+'<br><div class="big">'+rows(dest)+' Items</div><br>'
+  a=stats(dest)
+  temp=temp+'
+    <table>
+     <tr>
+      <td align=right>Kind:</td>
+      <td align=left>'+a[4,1]+'</td>
+     </tr>
+     <tr>
+      <td align=right>File Area:</td>
+      <td align=left>'+a[4,5]+'</td>
+     </tr>
+     <tr>
+      <td align=right>Size:</td>
+      <td align=left>'+size(a[1,2])+'</td>
+     </tr>
+    </table>'
+    i[1,1]="FILES"    i[2,1]=a[2,1]
+    i[1,2]="FOLDERS"  i[2,2]=a[3,1]
+    i[1,3]="PRIVATE"  i[2,3]=a[1,3]
+    i[1,4]="PUBLIC"   i[2,4]=a[1,4]
+  temp='<div style="width: 80%;"><table><tr><td>'+actionthis(z,i)+'</td><td align="center">'+temp+'</td></tr></table></div>'
+ /if
+
+ temp='<div id="filedetails">'+lf+temp+lf+'</div>'
+ return temp /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+fm_spinner=''
+fm_style='
+  <link rel="stylesheet" type="text/css" href="/apps/imageservices/filemanager/style.css" media="all">
+'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function findmetadata(z) locals x,i,m do
+ i=findmetadataOTHER(z)
+ m=ci_getmeta(z[1])
+ x='ERROR' x[1]="TITLE"       x[2]=m[4]
+ if x[2]<>'' and x[2]<>'ERROR' then i=appends(i,x) /if
+ x='ERROR' x[1]="DESCRIPTION" x[2]=m[5]
+ if x[2]<>'' and x[2]<>'ERROR' then i=appends(i,x) /if
+ return i /return
+/function
+
+
+
+
+
+function findmetadataOTHER(z) locals x,i,m,iScramble,iSecure,iCode,tmp,iStart,iVars,q do
+ m=ci_getmeta(z[1])
+ if z[2]=0 then
+  return 'ERROR' /return
+ elif z[8]='pict' or z[7]='.eps' then
+  x=getfilepath(z[1]) # This returns a path to the actual file, if it is in a pak file it will move it to a temp folder 
+                        We only pre-unpack images other files don't get unpacked /#
+  m=ci_imgnr(x,128,128,'FALSE')
+  m=ci_tagresults
+  q=ci_identify(x)
+  i[1,1]="WIDTH"    i[2,1]=q[1]
+  i[1,2]="HEIGHT"   i[2,2]=q[2]
+  i[1,3]="TYPE"     i[2,3]=m[3]
+  i[1,4]="SRCW"     i[2,4]=m[1]
+  i[1,5]="SRCH"     i[2,5]=m[2]
+  i[1,6]="SRC"      i[2,6]=fileprep(m[10])
+  i[1,7]="CAPTION"  i[2,7]=m[13]
+  i[1,8]="COMMENTS" i[2,8]=m[14]
+  return i /return
+ elif count(z[1],'.pak')>0 or count(z[1],'.bb')>0 then
+  return 'ERROR' /return
+ elif z[8]='mp3' then
+  # Using mp3info.lib /#
+  m=mp3_fileinfo(z[1])
+  i[1,1]="TYER"         i[2,1]=m[10] i[2,1]='2010'
+  i[1,2]="TDAT"         i[2,2]=m[11]
+  i[1,3]="TIT2"         i[2,3]=m[12]
+  i[1,4]="TIME"         i[2,4]=m[13]
+  i[1,5]="TPE1"         i[2,5]=m[14]
+  i[1,6]="TIT3"         i[2,6]=m[15]
+  i[1,7]="TALB"         i[2,7]=m[16]
+  i[1,8]="USLT"         i[2,8]=m[17]
+  i[1,9]="KEYWORDS"     i[2,9]=m[20]
+  i[1,10]="AUDIOINFO"   i[2,10]=m[21]
+  i[1,11]="COMMENTS"    i[2,11]=m[22]
+  i[1,12]="SERVICENAME" i[2,12]=m[23]
+  i[1,13]="LENGTH"      i[2,13]=m[24]
+  return i /return
+ elif z[8]="DB" then
+  iSecure=securityinfo(z[1]) if iSecure="ERROR" then iSecure="FALSE" else iSecure="TRUE" /if
+  m=dbstatus(left(z[1],length(z[1])-3))
+  i[1,1]="RECORDS"     i[2,1]=m[2,1]
+  i[1,2]="RECORDSIZE"  i[2,2]=m[2,4]
+  i[1,3]="INDEXED"     i[2,3]=m[3,1]
+  i[1,4]="ADDED"       i[2,4]=m[4,1]
+  i[1,5]="DELETED"     i[2,5]=m[2,2]
+  i[1,6]="FIELDS"      i[2,6]=m[1,4]
+  i[1,7]="SECURED"     i[2,7]=iSecure
+  return i /return
+ elif right(z[1],5)=".html" or right(z[1],4)=".htm" then
+  m=securityinfo(z[1])
+  # If its an html file /#
+  iCode="UNKNOWN" iScramble="UNKNOWN" iSecure="UNKNOWN"
+  iStart=isstartlink(z[1]) if iStart="TRUE" then iVars=tagresults[2,1] else iVars="ERROR" /if
+  if z[2]=0 then return 'ERROR' /return /if
+  iScramble=ISSCRAMBLE(z[1])
+  if iScramble='TRUE' then
+   iSecure='FALSE'
+   iCode="TRUE"
+  else
+   if z[2]<100000 then
+    copy file=z[1] to tmp /copy
+    if tmp='<<expand file="/apps/imageservices/security/gotoscramble.lib" /expand>>' then
+     iCode='TRUE'
+     iScramble='TRUE'
+     iSecure='TRUE'
+    else
+     if count(tmp,"<<")=0 then
+      iCode='FALSE'
+      iSecure='FALSE'
+     else
+      iCode='TRUE'
+      if left(tmp,58)=^<<expand file="/apps/imageservices/security/clearance.lib" /expand^ then iSecure="TRUE" else iSecure="FALSE" /if
+     /if
+    /if
+   else
+    iCode="UNKNOWN"
+   /if
+  /if
+  i[1,1]="CODE"        i[2,1]=iCode
+  i[1,2]="SCRAMBLED"   i[2,2]=iScramble
+  i[1,3]="SECURED"     i[2,3]=iSecure
+  i[1,4]="STARTLINK"   i[2,4]=iStart
+  if iVars<>'ERROR' then i[1,5]="STARTVARS"   i[2,5]=iVars /if
+  if m<>'ERROR' then
+   i[1,6]="EDITGROUP"   i[2,6]=m[8]
+   i[1,7]="RUNGROUP"    i[2,7]=m[9]
+   i[1,8]="PUBLICRUN"   i[2,8]=m[10]
+   i[1,9]="PUBLICRULE"  i[2,9]=m[11]
+   i[1,10]="GROUPRULE"  i[2,10]=m[12]
+  /if
+  return i /return
+ else
+  return 'ERROR' /return
+ /if
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function meta(i,text) locals x do
+ for name=i rowname=x do
+  if x[1]=text then return x[2] /return /if
+ /for
+ return 'ERROR' /return
+/function
+
+
+function getStartLink(fileN) locals out do
+ out = getlink(page)
+ out = replace(out,"/"+syshtmlosname+"/","/"+sysstartname)
+ out = chopright(out,"/"+sysstartname)
+ if left(fileN,1)="/" then
+  out = out + fileN
+ else
+  out = out + dirname(page) + fileN
+ /if
+ return out /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+function showicon(z,i) locals temp do
+
+ if z[2]=0 then
+  temp='<img src="'+ci_approot+'images/'+z[8]+'-128-dim.gif" width=128 height=128 border=0>'
+ elif z[8]="pict" then
+  temp='<img src="'+replaceall(meta(i,'SRC'),'//','/')+'" border="0" width="'+meta(i,'SRCW')+'" height="'+meta(i,'SRCH')+'">'
+ elif z[7]=".eps" then
+  temp='<img src="'+replaceall(meta(i,'SRC'),'//','/')+'" border="0" width="'+meta(i,'SRCW')+'" height="'+meta(i,'SRCH')+'">'
+ elif z[8]="mov" then
+  temp='
+    <script type="text/javascript">
+     var myQTObject = new QTObject("'+syspublicurl+ci_approot+'images/'+z[8]+'-128.gif", "'+z[13]+'", "128", "128");
+     myQTObject.addParam("href", "'+syspublicurl+'/'+z[1]+'");
+     myQTObject.addParam("controller", "false");
+     myQTObject.write();
+    </script>'
+ elif z[8]="mp3" then
+  temp='
+    <img src="'+ci_approot+'images/'+z[8]+'-128.gif" width="128" height="128" border="0"><br>
+    <div style=" position: relative; top: -12px;"><a href="javascript:soundManager.play('+"'mysound', '"+z[1]+"'"+');">play</a> | 
+    <a href="javascript:soundManager.stop('+"'mysound'"+');">stop</a></div>
+    <script type="text/javascript">
+     soundManager.createMovie('+"'"+'/apps/imageservices/jscripts/audio/soundmanager.swf'+"'"+');
+    </script>'
+ else
+  if z[1]=fm_chroot then
+   temp='<img src="'+ci_approot+'images/folder-128.gif" width=128 height=128 border=0>'
+  else
+   temp='<img src="'+ci_approot+'images/'+z[8]+'-128.gif" width=128 height=128 border=0>'
+  /if
+ /if
+ return '<div style="width: 138px; height: 138px; background: #ffffff; border: 1px solid #eeeeee;"><table width="100%" height="100%" border="0" cellpadding="0" cellspacing="0"><tr><td valign="center" align="center">'+temp+'</td></tr></table></div>' /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function sendblock(text) do
+ if text='ERROR' then 
+  return text /return
+ else
+  return '
+   <table width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+     <td align="center" valign="top"><div id="filedetails"><table width="95%" bgcolor="#ffffff" style="border: 1px solid #999999;" cellpadding="20" cellspacing="20"><tr><td align="center">'+lf+text+lf+'</td></tr></table></div></td>
+    </tr>
+   </table>'
+  /return
+ /if
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+globaldirsizecount=0
+
+
+function dirsize(path) locals x,y,s do
+ s=0
+ x=filelist(path)
+ for name=x rowname=y do
+  globaldirsizecount=globaldirsizecount+1
+  if globaldirsizecount>10000 then return -100000000 /return /if
+  if y[4]="DIR" and count(y[1],"cache")=0 then
+   s=s+dirsize(path+"/"+y[1])
+  else
+   s=s+y[2]
+  /if
+ /for
+ return s /return
+/function
+
+
+function stats(dest) locals a,b,c,x,y,z do
+ a[1,1]=0 a[2,1]=0 a[3,1]=0 a[4,1]=""
+ a[1,2]=0 a[2,2]=0 a[3,2]=0 a[4,2]=""
+ a[1,3]=0 a[2,3]=0 a[3,3]=0 a[4,3]=""
+ a[1,4]=0 a[2,4]=0 a[3,4]=0 a[4,4]=""
+ a[1,5]=0 a[2,5]=0 a[3,5]=0 a[4,5]=""
+ for name=dest rowname=x do
+  b=pakfileinfo(destination+"/"+x[1])
+  a[1,1]=a[1,1]+1
+  if b[4]="DIR" then
+   a[3,1]=a[3,1]+1
+   c=dirsize(destination+"/"+x[1])
+   a[1,2]=a[1,2]+c
+   a[3,2]=a[3,2]+c
+  else
+   a[1,2]=a[1,2]+b[2]
+   a[2,1]=a[2,1]+1
+   a[2,2]=a[2,2]+b[2]
+  /if
+  if b[5,1]="PRIVATE" then
+   a[1,3]=a[1,3]+1
+   if b[4]="FILE" then a[2,3]=a[2,3]+1 else a[3,3]=a[3,3]+1 /if
+  elif b[5,1]="PUBLIC" then
+   a[1,4]=a[1,4]+1
+   if b[4]="FILE" then a[2,4]=a[2,4]+1 else a[3,4]=a[3,4]+1 /if
+  elif b[5,1]="MIRRORED" then
+   a[1,5]=a[1,5]+1
+   if b[4]="FILE" then a[2,5]=a[2,5]+1 else a[3,5]=a[3,5]+1 /if
+  /if
+ /for
+ if a[2,1]<>0 then a[4,1]=plural(a[2,1]," File") /if
+ if a[3,1]<>0 then if a[4,1]="" then a[4,1]=plural(a[3,1]," Folder") else a[4,1]=a[4,1]+", "+plural(a[3,1]," Folder") /if /if
+ if a[2,2]<>0 then a[4,2]=plural(a[2,2],"File byte") /if
+ if a[3,2]<>0 then if a[4,2]="" then a[4,2]=plural(a[3,2]," Folder byte") else a[4,2]=a[4,2]+", "+plural(a[3,2]," Folder Byte") /if /if
+ if a[1,1]=a[1,3] then
+  if a[1,3]<>0 then a[4,5]="PRIVATE" /if
+ else
+  if a[1,3]<>0 then a[4,5]=a[1,3]+" Private" /if
+ /if
+ if a[1,1]=a[1,4] then
+  if a[1,4]<>0 then a[4,5]="PUBLIC" /if
+ else
+  if a[1,4]<>0 then if a[4,5]="" then a[4,5]=a[1,4]+" Public" else a[4,5]=a[4,5]+", "+a[1,4]+" Public" /if /if
+ /if
+ if a[1,1]=a[1,5] then
+  if a[1,5]<>0 then a[4,5]="MIRRORED" /if
+ else
+  if a[1,5]<>0 then if a[4,5]="" then a[4,5]=a[1,5]+" Mirrored" else a[4,5]=a[4,5]+", "+a[1,5]+" Mirrored" /if /if
+ /if
+ return a /return
+/function
+
+
+
+function plural(num,text) do
+ if num>1 then return num+text+"s" /return else return num+text /return /if
+/function
+
+
+
+ # a[1,1]=Total Items           a[2,1]=Total Files           a[3,1]=Total Folders           a[4,1]=Text description
+   a[1,2]=Total Size of Items   a[2,2]=Size of files         a[3,2]=size of folders         a[4,2]=Text
+   a[1,3]=Total Private Items   a[2,3]=Total Private Files   a[3,3]=Total Private Folders   a[4,3]=Text
+   a[1,4]=Total Public Items    a[2,4]=Total Public Files    a[3,4]=Total Public Folders    a[4,4]=Text
+   a[1,5]=Total Mirrored Items  a[2,5]=Total Mirrored Files  a[3,5]=Total Mirrored Folders  a[4,5]=Text
+ /#
+
+
+
+function size(s) locals g,m,k do
+ if isnumber(s) then
+  g=1024*1024*1024
+  m=1024*1024
+  k=1024
+  if s>g then
+   s=format(s/g,"NORMAL",2)+"&nbsp;GB ("+s+" bytes)"
+  elif s>m then
+   s=format(s/m,"NORMAL",1)+"&nbsp;MB ("+s+" bytes)"
+  elif s>k then
+   s=format(s/k,"NORMAL",1)+"&nbsp;KB ("+s+" bytes)"
+  else
+   s=s+"&nbsp;bytes"
+  /if
+ /if
+ return s /return
+/function
+
+
+
+function dadate(dt) locals d,dd do
+ d=adddays(left(dt,8),0)
+ dd=getdate(d,'short')
+ if d=yesterday then dd="Yesterday" /if
+ if d=today then dd="Today" /if
+ return dd+', '+gettime(middle(dt,10,14),'short') /return
+/function
+
+
+
+
+
+
+
+
+function littlelist(files) locals srt,a do
+ srt=split(files,"|")
+ for name=x value=1 to rows(srt) do
+  if right(srt[1,x],1)="/" then srt[1,x]=".AAAAA-{"+srt[1,x] /if
+ /for
+ srt=sortcol(srt,1)
+ if rows(srt)>5 then srt[1,6]="plus "+(rows(srt)-5)+" more" srt=gettable(srt,1,1,1,6) /if
+ a=""
+ for name=x value=1 to rows(srt) do
+  if left(srt[1,x],8)=".AAAAA-{" then srt[1,x]=replace(srt[1,x],".AAAAA-{","") /if
+  a=a+srt[1,x]+"|"
+ /for
+ a=left(a,length(a)-1)
+ return '<table style="background: #eeeeee; padding: 10; border: 1px solid #aaaaaa;"><tr><td><table border="0" cellpadding="20" cellspacing="0">'+llist(a)+'</table></td></tr></table>' /return
+/function
+
+
+function llist(files) locals thefile,icon,ftype do
+ # define thefile /#
+ if count(files,"|")=0 then
+  thefile=files
+ else
+  thefile=replace(chopright(files,"|"),"|","")
+ /if
+
+ # Choose Icon and file type /#
+ if count(thefile,".")=0 then ftype="pict" else ftype=lower(ci_filetype(thefile)) /if
+ if right(thefile,1)="/" then
+  thefile=left(thefile,length(thefile)-1)
+  icon='><img src="'+ci_approot+'images/dir-small.gif" border="0" width="12" height="12" align="center">'
+ else
+  icon='><img src="'+ci_approot+'images/'+ftype+'-small.gif" border="0" width="12" height="12" align="center">'
+ /if
+ if count(thefile," ")>0 and left(thefile,4)="plus" then icon=' align="center" bgcolor="#dddddd">' /if
+ thefile='<tr><td '+icon+'&nbsp;'+thefile+'</td></tr>'
+
+ # Return line /#
+ if count(files,"|")=0 then
+  return thefile /return
+ else
+  files=replace(chopleft(files,"|"),"|","")
+  return thefile+llist(files) /return
+ /if
+
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function box(title,contents) do
+ return '<table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+   <td align="center" valign="center" style="padding-top: 20px; padding-bottom: 20px;">'+contents+'</td>
+  </tr>
+  <tr>
+   <td align="center" valign="center" style="height: 30px;">'+title+'</td>
+  </tr>
+ </table>' /return
+/function
+
+
+
+
+
+
+
+
+
+function listfiles(path) locals a,aa,b,x,y,z,table,srch,temp,divlist do
+ divlist=''
+ table=''
+ # Handle search /#
+ if fm_searchtext<>"" and fm_searchtext<>"ERROR" and left(fm_searchtext,3)<>'cd ' then
+  table=table+'<div style="padding: 8px; background-color: #cccccc;"><a href="'+page+'" name="fm_searchtext" value="" align="right"><img src="images/stop.gif" width="14" height="14" border="0" align="right"></a><div class="red">Search Results (Files under 100K <a href="/apps/imageservices/filemanager/findall.html" target="details">more</a>)</div></div>'
+ /if
+ if path='' then path='/' /if
+ # Handle new file or new folder /#
+ if fm_new="folder" then
+  x="dir" y='folder'
+ elif fm_new="file" then
+  x="unk" y='file'
+ elif fm_new='DONE' then
+  table=table+'<div style="padding: 8px; background-color: #cccccc;">'+fm_message+'<a href="'+page+'" align="right"><img src="images/stop.gif" width="14" height="14" border="0" align="right"></a></div>'
+  fm_new='ERROR'
+ /if
+ if fm_new<>"ERROR" and fm_new<>"" then
+  table=table+'<div style="padding: 8px; background-color: #cccccc;">'+fm_message+'
+<a href="'+page+'" name="fm_new" value="ERROR" align="right"><img src="images/stop.gif" width="14" height="14" border="0" align="right"></a>
+ <form action="new" name="newform" accept-charset="utf-8">
+New '+y+' name.<br>
+  <input type="hidden" name="fm_new" value="'+fm_new+'">
+  <input type=text name="fm_newname" width="20" style="width: 80%;" onfocus="top.frames['+"'"+'path'+"'"+'].document.browseform['+"'"+'fm_searchtext'+"'"+'].value = '+"'"+'SEARCH'+"'"+';">
+ </form>
+</div>'
+ /if
+ z=ci_filelist(path)
+ z=sortcol(z,1)
+ z=sortcol(z,4)
+ if z<>'' then
+  for name=z rowname=x do
+   if right(x[1],6)='.scram' or x[1]='.trigger' then else
+   if left(x[1],1)='_' and x[4]='DIR' and fm_prefs[7]<>'TRUE' then else
+    if auth(4)=0 and x[5]="PRIVATE" then else
+     if left(x[1],1)="." and auth(11)=0 then else
+      if x[1]+"/"=ci_prefs[1,11] and fm_prefs[7]<>"TRUE" then else
+       if x[4]="dir" then
+        if x[1]+"/"=ci_prefs[1,11] then b="lkd" x[4]="lkd" else b="dir" /if
+        if left(x[1],1)='_' then b='lkd' x[4]='lkd' /if
+       else
+#       if count(x[1],".")=0 then b="pict" else b=ci_fileinfo(x[1]) b=b[2] /if /#
+        b=ci_fileinfo(x[1]) b=b[2]
+       /if
+       srch=.1
+       if fm_searchtext<>"" and fm_searchtext<>'ERROR' and x[4]<>"dir" and left(fm_searchtext,3)<>'cd ' then
+        if x[2]<102400 then
+         copy file=path+"/"+x[1] to temp /copy
+         srch=count(temp,fm_searchtext)
+         temp='ERROR'
+        else
+         srch=0
+        /if
+       /if
+       if srch<>0 then
+        if srch=.1 then srch='' /if
+        if count(fm_list+"|","|"+x[1]+"|")=1 or count(fm_list+"|","|"+x[1]+"/|")=1 then a="sel" else a="nor" /if
+
+
+
+        if x[6]='n' then
+         aa=' bad'
+         divlist=divlist+'<div class="'+a+' '+lower(left(x[5],3))+' '+b+aa+'" id="B'+x[1]+'">'+srch+'</div>'+lf
+        else
+         aa=''
+         divlist=divlist+'<div class="'+a+' '+lower(left(x[5],3))+' '+b+aa+'" id="F'+x[1]+'">'+srch+'</div>'+lf
+        /if
+
+
+
+
+
+
+
+
+       /if
+      /if
+     /if
+    /if
+   /if
+   /if
+  /for
+ /if
+ return table+lf+'<div id="filelist">'+lf+divlist+'</div>' /return
+/function
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function filenameverify(text) locals temp do
+ temp=replaceall(text,'%','_')
+ if temp<>aestivafilename(temp) then
+  return "Invalid character in "+'"'+text+'"'+" Name.<br>Avoid the following characters<br>&lt;&gt;/'+\|*:;?&@#$%^,!"+'"' /return
+ else
+  return '' /return
+ /if
+/function
+
+function auth(pos) locals a do
+ a=middle(fm_permissions,pos,pos)
+ if a="Y" then
+  a=1
+ else
+  a=0
+ /if
+ return a /return
+/function
+
+
+
+function movefolder(src,dest) locals x,y,temp do
+  temp=sysmd(dest)
+  x=filelist(src)
+  for name=x rowname=y do
+   if y[4]="DIR" then
+    temp=movefolder(src+"/"+y[1],dest+"/"+y[1])
+    # temp=sysrd(src+"/"+y[4]) Uncomment if you want to move the directory /#
+   else
+    temp=ci_cpfile(src+"/"+y[1],dest+"/"+y[1])
+    # temp=ci_rmfile(src+"/"+y[4]) This is if you want to move the file /#
+   /if
+  /for
+  return temp /return
+/function
+
+
+
+
+
+
+
+
+
+
+function fm_displaypagebegin() do
+ return '<a href="javascript:parent.browse.document.browseform.submit();"><img src="images/reload.gif" hspace="3" vspace="3" width="12" height="12" border="0"></a>' /return
+/function

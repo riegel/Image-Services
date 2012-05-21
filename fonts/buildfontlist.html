@@ -1,0 +1,101 @@
+<<
+fontdir='/apps/imageservices/fonts/'
+
+expand file="/system/clearimage/DLL.lib" /expand
+function loadfontsandtable() locals a,fontmap,b,x,y,foundit do
+ a=sysls(fontdir)
+ copy file=fontdir+"fontmap.txt" ts="," to fontmap /copy
+ b='ERROR'
+ for name=a rowname=x do
+  temp=sysfixprivate(fontdir+x[1])
+  foundit="ERROR"
+  for name=fontmap rowname=y do
+   if y[1]=x[1] then
+    foundit="TRUE"
+    if b="ERROR" then b=y else b=append(b,y) /if
+    if y[2]='' or y[2]='ERROR' then
+     b[2,rows(b)]='EMPTY'
+    /if
+   /if
+  /for
+  if foundit="ERROR" and (right(x[1],4)='.TTF' or right(x[1],4)='.PFB' or right(x[1],4)='.PFA' or right(x[1],4)='.OTF') then
+   y[1]=x[1] y[2]='EMPTY'
+   if b="ERROR" then b=y else b=append(b,y) /if
+  /if
+ /for
+ return b /return
+/function
+
+function showfont(path,header,bg,fontid) locals a,b,c,d,boxes do
+ if not(isfile(path)) then
+   a[1]='HEADER' a[2]=bg       a[3]='1' a[4]=bg       a[5]='LEFT' a[6]='BOX'       a[7]='0'  a[8]='0'  a[9]='500' a[10]='300' a[11]='x'            a[12]=fontid a[13]='12' a[14]='000000'
+   b[1]='HEADER' b[2]='ffffff' b[3]='0' b[4]='FFFFFX' b[5]='LEFT' b[6]='HTML' b[7]='10' b[8]='10' b[9]='490' b[10]='250' b[11]='^'+header+'^' b[12]=fontid b[13]='27' b[14]='000000'
+   boxes=append(a,b)
+   c=ci_pagebuilder(500,300,scale,boxes,path,'TRUE','FALSE') a=ci_tagresults
+   temp=ci_convert(path,'PNG')
+   d=ci_img(path,500,300,'FALSE')
+   ci_tagresults=a
+ else
+   d=ci_img(path,500,300,'FALSE')
+ /if
+ return d /return
+/function
+
+
+
+
+>>
+<html>
+ <head>
+  <title>Build a Font List</title>
+ </head>
+ <body>
+  <a href="<<page>>">RELOAD</a> | <a href="<<iconpage>>">DESKTOP</a> | <<ci_registered>><hr>
+  <<ci_upload(fontdir+'{{USECLIENTNAME}}|'+fontdir+'{{USECLIENTNAME}}|'+fontdir+'{{USECLIENTNAME}}|'+fontdir+'{{USECLIENTNAME}}|'+fontdir+'{{USECLIENTNAME}}','UPLOAD NEW TTF FONTS')>>  |  
+  <hr>
+  <<if showfont<>'ERROR' then display showfont /display /if>>
+  <hr>
+  <h2><<fontdir>></h2>
+  <<
+   b=loadfontsandtable()
+   b=inscols(b,1,1)
+   for name=b rownum=x do
+    if b[2,x]=fontid then temp='*' else temp='' /if
+    b[1,x]='<a href="showfont" name="fontid" value="'+b[2,x]+'">View</a>'+temp
+    b[3,x]='<a href="lookupfont" name="fontid" value="'+b[2,x]+'">'+b[3,x]+'</a>'+temp
+   /for
+   display ci_table(b) /display
+  >>
+ </body>
+</html>
+<<overlay lookupfont
+ b=loadfontsandtable()
+ temp=syscall('FONTLOOKUP','ttf2pt1 -GA '+ci_getpath(fontdir+fontid)+' '+ci_getpath(fontdir+'DUMMY')+' 2>&1')
+ temp=replace(chopleft(temp,'FontName'),'FontName','')
+ temp=trim(chopright(temp,lf))
+ if temp<>"ERROR" and temp<>"" then
+  for name=b rownum=x do
+   if b[1,x]=fontid then b[2,x]=temp /if
+  /for
+ /if
+ temp=sysrm(fontdir+'DUMMY.afm')
+ temp=sysrm(fontdir+'DUMMY.t1a')
+ copy b to file=fontdir+"fontmap.txt" ts="," /copy
+
+ for name=b rowname=x do
+  if fontid=x[1] then fontname=x[2] /if
+ /for
+#
+ temp=ci_rmimage(fontdir+replace(fontid,'.','_')+'.jpg')
+/#
+ showfont=showfont(fontdir+replace(fontid,'.','_')+'.jpg',fontname+' ('+fontid+')<br><br>Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz 0123456789<br><br>The Quick Brown Fox Jumped Over The Lazy Dog!','eeeeee',fontname)
+ goto page
+>>
+<<overlay showfont
+ b=loadfontsandtable()
+ for name=b rowname=x do
+  if fontid=x[1] then fontname=x[2] /if
+ /for
+ showfont=showfont(fontdir+replace(fontid,'.','_')+'.jpg',fontname+' ('+fontid+')<br><br>Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz 0123456789<br><br>The Quick Brown Fox Jumped Over The Lazy Dog!','eeeeee',fontname)
+ goto page
+>>

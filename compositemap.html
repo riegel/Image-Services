@@ -1,0 +1,216 @@
+<<
+  # BEGIN Load Alternate if found /#
+    temp=replace(page,'/imageservices/','/imageservices_alternate/')
+    if domainname<>'clearimageonline.com' and isfile(temp) then goto temp /if
+  # END   Load Alternate if found /#
+
+
+function size(s) locals g,m,k do
+ g=1024*1024*1024
+ m=1024*1024
+ k=1024
+ if s>g then
+  s=format(s/g,"NORMAL",2)+"&nbsp;GB ("+s+" bytes)"
+ elif s>m then
+  s=format(s/m,"NORMAL",1)+"&nbsp;MB ("+s+" bytes)"
+ elif s>k then
+  s=format(s/k,"NORMAL",1)+"&nbsp;KB ("+s+" bytes)"
+ else
+  s=s+"&nbsp;bytes"
+ /if
+ return s /return
+/function
+
+
+
+
+
+function maptype() locals temp do
+ temp='
+<input type="radio" name="ci_mapstyle" value="0">1 image map<br>
+<input type="radio" name="ci_mapstyle" value="11">1 image with links<br>
+<input type="radio" name="ci_mapstyle" value="31">1 composite image with normal, hover and active links<br>
+<input type="radio" name="ci_mapstyle" value="21">1 composite image with normal and hover links<br>
+'
+ return temp /return
+/function
+
+
+
+
+
+function uploadstates(y) locals temp,normal,hover,active do
+ if var=0 then
+  normal=ci_popup(path,'<img src=/apps/imageservices/filemanager/images/upload.gif border=0 width=12 height=12 align=center>&nbsp;Upload&nbsp;Image')
+ else
+  normal=ci_popup(path,'<img src=/apps/imageservices/filemanager/images/img-top.gif border=0 width=12 height=12 align=center>&nbsp;Normal')
+ /if
+ hover=ci_popup(y[1]+y[2]+"HOVER"+y[4],'<img src=/apps/imageservices/filemanager/images/img-mid.gif border=0 width=12 height=12 align=center>&nbsp;Hover')
+ active=ci_popup(y[1]+y[2]+"ACTIVE"+y[4],'<img src=/apps/imageservices/filemanager/images/img-bot.gif border=0 width=12 height=12 align=center>&nbsp;Active')
+ temp='<table cellpadding="2" width="100%"><tr>'
+ temp=temp+'<td align="center" bgcolor="#eeeeee">'+normal+'</td><td>'+ci_img(path,400,100,"false")+'</td></tr>'
+ if ci_mapstyle=0 or ci_mapstyle=11 then else
+  temp=temp+'<td align="center" bgcolor="#eeeeee">'+hover+'</td><td>'+ci_img(y[1]+y[2]+"HOVER"+y[4],400,100,"false")+'</td></tr>'
+  if ci_mapstyle=31 or ci_mapstyle=33 then
+   temp=temp+'<td align="center" bgcolor="#eeeeee">'+active+'</td><td>'+ci_img(y[1]+y[2]+"ACTIVE"+y[4],400,100,"false")+'</td></tr>'
+  /if
+ /if
+ temp=temp+'</tr></table>'
+ return temp /return
+/function
+
+
+
+
+
+function compositetype() locals temp,jpegoff,gifoff,jpegcolor,gifcolor,formatcolor,formatoff do
+ if var=0 then return '' /return /if
+ formatoff=' onclick="submit()"' formatcolor="#000000"
+ if ci_imageformat="GIF" then gifoff=' onchange="submit()"' jpegoff=" disabled" jpegcolor="#bbbbbb" gifcolor="#000000" /if
+ if ci_imageformat="JPEG" then gifoff=" disabled" jpegoff=' onchange="submit()"' jpegcolor="#000000" gifcolor="#bbbbbb" /if
+ if ci_imageformat="PNG" then gifoff=" disabled" jpegoff=" disabled" jpegcolor="#bbbbbb" gifcolor="#bbbbbb" /if
+ if ci_imageformat="UPLOAD" then gifoff=" disabled" jpegoff=" disabled" jpegcolor="#bbbbbb" gifcolor="#bbbbbb" /if
+ if ci_mapstyle=11 or ci_mapstyle=21 or ci_mapstyle=31 then else jpegoff=" disabled" jpegcolor="#bbbbbb" gifcolor="#bbbbbb" gifoff=" disabled" formatcolor="#bbbbbb" formatoff=" disabled" /if
+ temp='
+ <table>
+  <tr>
+   <td colspan=3 align=left><font color="'+formatcolor+'">COMPOSITE INFORMATION</font>
+  </tr>
+  <tr>
+   <td bgcolor=#eeeeee style="width: 75px;"><input type="radio" name="ci_imageformat" value="JPEG"'+formatoff+'><font color="'+formatcolor+'">JPEG</font></td>
+   <td bgcolor=#eeeeee align=right><font color="'+jpegcolor+'">Quality</font></td>
+   <td bgcolor=#eeeeee style="width: 200px;">
+    <SELECT NAME=ci_jpeg SIZE=1 style="width: 150px;"'+jpegoff+'>
+     <OPTION VALUE=10>10% - Low</OPTION>
+     <OPTION VALUE=20>20%</OPTION>
+     <OPTION VALUE=30>30% - Medium</OPTION>
+     <OPTION VALUE=40>40%</OPTION>
+     <OPTION VALUE=50>50%</OPTION>
+     <OPTION VALUE=60>60% - High</OPTION>
+     <OPTION VALUE=70>70%</OPTION>
+     <OPTION VALUE=80>80% - Maximum</OPTION>
+     <OPTION VALUE=90>90%</OPTION>
+     <OPTION VALUE=100>100%</OPTION>
+    </SELECT>
+   </td>
+  </tr>
+  <tr>
+   <td bgcolor=#eeeeee><input type="radio" name="ci_imageformat" value="GIF"'+formatoff+'><font color="'+formatcolor+'">GIF</font><br></td>
+   <td bgcolor=#eeeeee align=right><font color="'+gifcolor+'">Colors</font></td>
+   <td bgcolor=#eeeeee>
+    <SELECT NAME= ci_gif SIZE=1 style="width: 150px;"'+gifoff+'>
+     <OPTION VALUE=2>2 - Low</OPTION>
+     <OPTION VALUE=4>4</OPTION>
+     <OPTION VALUE=8>8 - Medium</OPTION>
+     <OPTION VALUE=16>16</OPTION>
+     <OPTION VALUE=32>32</OPTION>
+     <OPTION VALUE=64>64 - High</OPTION>
+     <OPTION VALUE=128>128</OPTION>
+     <OPTION VALUE=256>256 - Maximum</OPTION>
+    </SELECT>
+   </td>
+  </tr>
+  <tr>
+   <td bgcolor=#eeeeee><input type="radio" name="ci_imageformat" value="PNG"'+formatoff+'><font color="'+formatcolor+'">PNG</font></td>
+   <td colspan=2 align=center bgcolor=#eeeeee><input type="submit" name="me_button" value="Build New Composite"></td>
+  </tr>
+ </table>
+ '
+ return temp /return
+/function
+
+
+
+
+
+function imagenotes() locals temp,info,info1,info2,y,im,im1,im2 do
+ temp='CURRENT COMPOSITE SPECS<br>Click image to see in full resolution.'
+ if ci_mapstyle=0 or ci_mapstyle=11 then 
+  im='<a href="/apps/imageservices/pictureview.html" name="ci_imagepath" value="'+path+'" target="new">'+ci_img(path,100,48,"FALSE")+'</a>'
+  info=ci_identify(path)
+  temp=temp+"<table><tr><td>"+im+"</td><td>1 "+info[3]+" image to load "+info[1]+"px by "+info[2]+"px<br>"+size(info[6])+"<br>"+format(info[6]/3686.4,"normal",2)+" seconds at 28.8 kbps.</td></tr></table>"
+ elif ci_mapstyle=31 or ci_mapstyle=21 then
+  y=ci_extract(path)
+  im='<a href="/apps/imageservices/pictureview.html" name="ci_imagepath" value="'+y[1]+y[2]+"ALL"+y[4]+'" target="new">'+ci_img(y[1]+y[2]+"ALL"+y[4],100,48,"FALSE")+'</a>'
+  info=ci_identify(y[1]+y[2]+"ALL"+y[4])
+  temp=temp+"<table><tr><td>"+im+"</td><td>1 "+info[3]+" image to load "+info[1]+"px by "+info[2]+"px<br>"+size(info[6])+"<br>"+format(info[6]/3686.4,"normal",2)+" seconds at 28.8 kbps.</td></tr></table>"
+ /if
+return temp /return
+/function
+
+
+
+
+
+
+
+
+ y=ci_extract(path)
+>>
+<html>
+<<head()>>
+<<
+
+if me_page=4 then
+ temp=putmap()
+ display '<a href="javascript: window.opener.location.reload(); window.close();">close</a>' /display
+else
+display'
+<hr>
+<form action="advance" type="submit" accept-charset="utf-8">
+' /display
+if me_page="ERROR" then me_page="1" /if
+if me_page=1 then
+ display 'STEP 1: Choose your map type<hr>'+maptype() /display
+elif me_page=2 then
+if ci_mapstyle=0 or ci_mapstyle=11 then
+ display 'STEP 2: Upload your graphic.<hr>
+'+uploadstates(y) /display
+else
+ display 'STEP 2: Upload your graphics and build composite image.<hr>
+'+uploadstates(y)+'<hr>
+<table>
+<tr>
+ <td>
+'+compositetype()+'
+ </td>
+ <td>
+'+imagenotes()+'
+ </td>
+</tr>
+</table>
+<hr>
+Click "Build New Composite" when any graphics change.<br>
+' /display
+/if
+elif me_page=3 then
+ display 'STEP 3: Optimize your graphic (optional)<hr>'+imagenotes()+'<hr>
+If you are happy with the size and download speeds just click the next button.
+<hr>
+I you have an image editor like Photoshop you may be able to produce a more optimized graphic.<br>
+Use These 3 Steps:
+<ol>
+ <li>'+ci_download(y[1]+y[2]+"ALL"+y[4],'/apps/imageservices/filemanager/images/download.gif','','','FALSE')+' download this image by clicking the download icon.</li>
+ <li>Use an image editor like Photoshop to optimize the graphic.</li>
+ <li>'+ci_popup(y[1]+y[2]+"ALL"+y[4],'<img src="/apps/imageservices/filemanager/images/upload.gif" border="0" width="12" height="12">')+' re-upload your optimized graphic</li>
+</ol>
+'
+ /display
+/if
+display '
+<hr>
+<input type="submit" name="me_button" value="Back"><input type="submit" name="me_button" value="Next">
+</form>'
+/display
+/if
+>>
+<<me_button="ERROR">>
+</html>
+<<overlay advance
+if me_button="Build New Composite" then ow="MAKESTACKED" temp=generateimages(path) /if
+
+if me_button="next" then me_page=me_page+1 /if
+if me_button="back" then me_page=me_page-1 /if
+if me_page=0 then me_page=1 /if
+goto page
+>>

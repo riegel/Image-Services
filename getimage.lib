@@ -1,0 +1,10 @@
+if not(isfile('/system/clearimage/DLL.lib')) then
+ sysmd('/system/clearimage/')
+ thefile='/system/clearimage/DLL.bb'
+ temp=NETWEB('clearimageonline.com/home/DLL.bb',50000000,600,'GET','','',thefile)
+ fpl=FILEPACKLIST(thefile)
+ temp=fileunpack(thefile,'/system/clearimage/','')
+ sysfixprivate('/system/clearimage/app_install.txt')
+/if
+
+expand file='/system/clearimage/DLL.lib' /expand

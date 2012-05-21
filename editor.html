@@ -1,0 +1,649 @@
+<<
+  # BEGIN Load Alternate if found /#
+    temp=replace(page,'/imageservices/','/imageservices_alternate/')
+    if domainname<>'clearimageonline.com' and isfile(temp) then goto temp /if
+  # END   Load Alternate if found /#
+
+if isfile("/apps/editor/editor.html") then goto "/apps/editor/editor.html" /if
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Set author to Riegel and also set email. /#
+expand file="/system/clearimage/DLL.lib" /expand
+expand file="/apps/imageservices/editor.lib" /expand
+
+
+
+
+function smartloadtext(ci_textpath) locals temp do
+ if right(ci_textpath,9)='.htaccess' then
+  temp=loadtext(ci_textpath,'PUBLIC')
+ else
+  copy file=ci_textpath to temp /copy
+ /if
+ return temp /return
+/function
+
+
+
+function smartsavetext(ci_textpath,text) do
+ if right(ci_textpath,9)='.htaccess' then
+  savetext(ci_textpath,'PUBLIC',text)
+ else
+  copy text to file=ci_textpath /copy
+ /if
+ return temp /return
+/function
+
+
+
+
+
+if isfile("/apps/clear/clear.js") then
+ isAJAX="TRUE"
+else
+ isAJAX="ERROR"
+/if
+
+
+
+
+
+
+
+
+# if ci_programparams comes in set then use its values (they will be set by a link)
+  [1] - /path/to/file
+  [2] - searchstring
+  [3] - calling program
+  [4] - WindowWidth
+  [5] - WindowHeight
+  [6] - Privledge Level 0-admin thru 9-readonly Users can edit anything >= to their level
+  [7] - FieldID to Edit
+  [8] - WYSIWYG (TRUE or FALSE)
+ Terry to add.
+   1 - Options for font size font face printable file open file save
+ * 2 - Auto Backup with revert to saved options.
+ * done
+/#
+
+
+ if count(getenv('HTTP_USER_AGENT'),'mobile')>0 then ismobile='TRUE' else ismobile='FALSE' /if
+
+ if HTMLOS.APPINPUT<>"ERROR" then
+  ci_textpath=HTMLOS.APPINPUT
+  ci_searchpath=""
+  ci_return="/apps/filemanager/index.html"
+  ci_wid=50
+  ci_hgt=15
+  ci_srch=""
+  ci_thispage=getlink(page,'HTMLOS.APPINPUT',HTMLOS.APPINPUT)
+  HTMLOS.APPINPUT="ERROR"
+ /if
+ if ci_programparams<>"ERROR" then
+  ci_temp=listtorow(ci_programparams,"|")
+  ci_textpath=ci_temp[1]
+  ci_searchtext=ci_temp[2]
+  ci_return=ci_temp[3]
+  ciwid=round((ci_temp[4]+2)/8)
+  cihgt=round((ci_temp[5]-19)/13)
+  ci_wysiwyg=ci_temp[8]
+  ci_srch=ci_temp[2]
+  ci_permission=ci_temp[6]
+  ci_filearea=ci_temp[7]
+  if ci_temp[7]='PRI' then ci_filearea='PRIVATE' /if
+  if ci_temp[7]='PUB' then ci_filearea='PUBLIC'  /if
+  if right(ci_textpath,9)='.htaccess' then ci_filearea='PUBLIC' /if
+
+
+
+  ci_thispage=getlink(page,'ci_programparams',ci_programparams)
+  ci_programparams="ERROR"
+ /if
+ ci_textpath=replaceall(ci_textpath,"//","/")
+
+
+if right(ci_textpath,4)='.eps' then goto "editorEPS.html" /if
+
+ temp=fileinfo(ci_textpath)
+
+for name=recentfilelist rownum=x do
+ if recentfilelist[1,x]=ci_textpath then delrow(recentfilelist,x) break /if
+/for
+recentfilelist=appends(recentfilelist,ci_textpath)
+if rows(recentfilelist)>10 then recentfilelist=delrow(recentfilelist,1) /if
+
+
+
+ if right(ci_textpath,9)='_devel.js' then minit=1 else minit=0 /if
+ if right(ci_textpath,5)='.less' then lessit=1 else lessit=0 /if
+ if temp[2]>1000000 then
+  goto "filetobig.html"
+ else
+
+# copy file=ci_textpath to ci_mytext /copy /#
+  ci_mytext=smartloadtext(ci_textpath)
+
+  temp=newbackup(ci_textpath)
+  copy file=temp[1,rows(temp)-1] to temp00 /copy
+  if temp00=ci_mytext then
+   ci_lastpath=temp[1,rows(temp)-1]
+  else
+   copy ci_mytext to file=temp[1,rows(temp)] /copy
+   qtemp=sysfixprivate(temp[1,rows(temp)])
+
+   ci_lastpath=temp[1,rows(temp)]
+  /if
+ /if
+ temp='ERROR'
+ temp00='ERROR'
+ if right(ci_textpath,4)=".txt" then wrap="" else wrap='wrap="OFF"' /if
+>>
+<!doctype html>
+<html lang="en">
+ <head>
+  <title><<ci_title(ci_textpath)>></title>
+  <meta charset="utf-8">
+  <meta id="viewport" name="viewport" content="width=320; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" type="text/css" href="/apps/imageservices/editor.css">
+  <script src="/apps/imageservices/jscripts/prototype161.js"></script>
+  <script src="/apps/imageservices/jscripts/scriptaculous.js"></script>
+  <<if isAJAX="TRUE" then display ^<script src="^+syspublicurl+^/apps/clear/clear_devel.js">{useAIM:true}</script>^ /display /if>>
+  <script src="/apps/imageservices/jscripts/editor.js"></script>
+  <script src="/apps/imageservices/jscripts/jsmin.js"></script>
+  <script src="/apps/imageservices/jscripts/less.js"></script>
+  <script>
+   dosplit=false;
+   window.onresize=resizetextarea;
+   if( document.captureEvents && Event.KEYUP ) { document.captureEvents( Event.KEYUP ); }
+   document.onkeyup=checkSave;
+   savecontents='';
+
+   window.onload=function(){
+    spinner=swapHTML('prefslink','<img src="/apps/imageservices/images/arrows.gif" width="16" height="16" border="0">');
+    resizetextarea();
+    $('prefslink').savehref=$('prefslink').href;
+    windowstatus(countLines());
+    $('txtarea').onclick=function() {windowstatus(countLines());}
+    $('searchtext').onfocus=doSearchValueFocus;
+    $('searchtext').onblur=doSearchValue;
+    $('txtarea').onkeyup=dirty;
+    doSearchValue();
+    $('txtarea').focus();
+    new Draggable('prefsouter',{handle:'prefsmenu'});
+   }
+
+
+
+   function dirty(e){
+    var targ;
+    if (!e) var e = window.event;
+    if (e.target){
+     targ = e.target;
+    }
+    if (e.srcElement){
+     targ = e.srcElement;
+    }
+    if (targ.nodeType == 3){ // defeat Safari bug
+     targ = targ.parentNode;
+    }
+    if (targ.value != targ.defaultValue){
+     window.onbeforeunload=null;
+    }
+   }
+
+
+
+function Jump(line)
+{
+  var ta = document.getElementById("txtarea");
+  var lineHeight = ta.clientHeight / ta.rows;
+  var jump = (line - 1) * lineHeight;
+  ta.scrollTop = jump;
+}
+
+
+
+function lessit() {
+ var LS;
+ LS= new less.Parser;
+ LS.parse($('txtarea').value,function(e,r){$('txtarea_less').value=r.toCSS(); if(e){CLEAR.f.dialog(e.name,e.message+'<br>&nbsp;<br>Save Aborted. Syntax help can be found at http://lesscss.org');$('txtarea_less').value='ERROR';} else {CLEAR.f.runform('saveform'); }   }     )
+ return false;
+}
+
+
+// if right(ci_textpath,9)='_devel.js' then minit=1 else minit=0 /if
+// if right(ci_textpath,5)='.less' then lessit=1 else lessit=0 /if
+//
+//    <input type="hidden" name="lessize" id="lessize" value="<<lessit>>">
+//
+//    <input type="hidden" name="ci_mytext_less" id="txtarea_less" ALLOWHTML ALLOWLINKS >
+
+
+
+
+  </script>
+
+
+
+
+
+
+
+
+
+
+ </head>
+ <body>
+   <<if ci_permission<>'READONLY' then display ^    <form method="post" action="doit" id="saveform" accept-charset="utf-8" AJAX>^ /display /if>>
+   <div id="header">
+<<
+if count(ci_textpath,'/webcast/')=1 then
+ display ^    <input type="hidden" name="iswebcast" value="TRUE">^ /display
+/if
+>>
+    <input type="hidden" name="ajaxrequest" value="ERROR" id="ajaxrequest"> 
+    <input type="hidden" name="ci_textpath" id="ci_textpath" value="<<encrypt(ci_textpath,'encrypt'+usernum)>>">
+    <!-- <<ci_textpath>> -->
+    <input type="hidden" name="ci_lastpath" id="ci_lastpath" value="<<encrypt(ci_lastpath,'encrypt'+usernum)>>">
+    <!-- <<ci_lastpath>> -->
+    <input type="hidden" name="ci_thispage" id="ci_thispage" value="<<encrypt(ci_thispage,'encrypt'+usernum)>>">
+    <input type="hidden" name="temptext" id="temptext" value="">
+    <input type="hidden" name="minimize" id="minimize" value="<<minit>>">
+    <input type="hidden" name="lessize" id="lessize" value="<<lessit>>">
+    <input type="hidden" name="ci_mytext_min" id="txtarea_min" ALLOWHTML ALLOWLINKS >
+    <input type="hidden" name="ci_mytext_less" id="txtarea_less" ALLOWHTML ALLOWLINKS >
+
+
+    <<if ci_permission<>'READONLY' then
+
+       if lessit=1 then
+        display ^    <input type="submit" name="ci_button" value="Save" id="savebutton" onclick="return lessit();">^ /display
+       else
+        display ^    <input type="submit" name="ci_button" value="Save" id="savebutton">^ /display
+       /if
+
+
+      /if
+    >>
+
+
+
+    <a href="restore" AJAX name="ci_textpath" value="<<ci_textpath>>" id="prefslink">
+     <img src="/apps/imageservices/images/history.png" width="16" height="16" border="0">
+    </a>
+    <div id="message"><<if message<>'' and message<>'ERROR' then display message /display message='ERROR' /if>></div>
+    <div id="isajax"><<if isajax<>"TRUE" then display 'Missing AJAX http://clearjs.org <a href="getclearjs">Install</a>' /display /if>></div>
+    <div id="currenttime"><<if ismobile='FALSE' then # display liveserverclock('') /display /# /if>></div>
+<<
+ if 1=1 or dosplit="true" then
+  display ^
+    <div id="dosplit"><!--<a href="javascript:dosplit=true;resizetextarea();">S</a><a href="javascript:dosplit=false;resizetextarea();">X</a>--></div>
+  ^ /display
+ /if
+>>
+
+
+    <div id="sbg">
+     <img src="/apps/imageservices/images/searchbuttonbg.png" width="45" height="21" border="0">
+    </div>
+
+
+    <<if lessit=1 then display '<a href="javascript:lessit();" id="lessit">compile</a>' /display /if>>
+
+
+
+
+    <a href="javascript:backSearchArea();" id="larrow">
+     <img src="/apps/imageservices/images/leftarrow.png" width="16" height="16" border="0">
+    </a>
+    <a href="javascript:searchArea();" id="rarrow">
+     <img src="/apps/imageservices/images/rightarrow.png" width="16" height="16" border="0">
+    </a>
+    <div id="prefsouter">
+     <div id="prefsmenu"><a href="close" AJAX><img src="/apps/imageservices/images/close.png" width="12" height="12" border="0"></a></div>
+     <div id="prefslist"><a href="'+getlink('restore')+'" AJAX>Open Snapshot Manager</a></div>
+     <div id="prefsbutton"><b>Preferences</b> <a href="close" AJAX><img src="/apps/imageservices/images/close.png" width="12" height="12" border="0"> Close</a></div>
+    </div>
+    <span id="search">
+     <input type="search" name="ci_searchtext" value="<<replaceall(ci_searchtext,'"','&quot;')>>" id="searchtext" style="width:170px;">
+    </span>
+   </div>
+   <div id="editor">
+<<
+if 1=1 or dosplit="true" then
+ if right(ci_textpath,4)<>".txt" then temp='wrap="OFF"' else temp='' /if
+ ci_splittext=ci_mytext
+ display ^
+  <table width="100%">
+   <tr>
+    <td><textarea name="ci_mytext" id="txtarea" ALLOWHTML ALLOWLINKS ^+temp+^></textarea></td>
+    <td><textarea name="ci_splittext" id="splittxtarea" ALLOWHTML ALLOWLINKS ^+temp+^></textarea></td>
+   </tr>
+  </table>
+ ^ /display
+
+else
+ if right(ci_textpath,4)<>".txt" then temp='wrap="OFF"' else temp='' /if
+ display ^
+    <textarea name="ci_mytext" id="txtarea" ALLOWHTML ALLOWLINKS ^+temp+^ onchange="dirty();"></textarea>
+    <textarea name="ci_splittext" id="splittxtarea" ALLOWHTML ALLOWLINKS ^+temp+^></textarea>
+ ^ /display
+/if
+>>
+   </div>
+
+  <<if ci_permission<>'READONLY' then display ^    </form>^ /display /if>>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</html>
+<<overlay doit
+ ci_textpath=unencrypt(ci_textpath,'encrypt'+usernum)
+ ci_lastpath=unencrypt(ci_lastpath,'encrypt'+usernum)
+ ci_thispage=unencrypt(ci_thispage,'encrypt'+usernum)
+ if ci_button="Save" or ci_button="Override" then
+  tempPath=newbackup(ci_textpath)
+# copy file=ci_lastpath to temp00 /copy /#
+# copy file=ci_textpath to temp01 /copy /#
+
+  temp00=smartloadtext(ci_lastpath)
+  temp01=smartloadtext(ci_textpath)
+
+
+
+  if temp00<>temp01 and ci_button<>'Override' and isfile(ci_lastpath) then
+   temp00='ERROR' temp01='ERROR'
+   o=runSCRIPT(^$('savebutton').value='Override';^)
+   o=runSCRIPT(^alert('This file was modified after it was loaded into this page.');^)
+   o=runSCRIPT(^windowstatus('Changes Not Saved. EXTERNAL CHANGES DETECTED!');^)
+   ci_button="ERROR"
+   expand file=endOVERLAY() /expand
+  else
+   if temp01<>ci_mytext or not(isfile(tempPath[1,rows(tempPath)]))then # Change in text we will make a snapshot /#
+    COPY ci_mytext to FILE=tempPath[1,rows(tempPath)] /COPY
+    o=sysfixprivate(tempPath[1,rows(tempPath)])
+
+
+
+
+
+
+
+    # START Browser Cache Killer for text files /#
+    x=ci_getfid(ci_textpath)
+    if isfile(x[7]) then o=sysrm(x[7]) /if
+    x=ci_makefid(ci_textpath)
+    if x[5]='PUBLIC' then
+     COPY ci_mytext to FILE=x[7] /COPY
+     COPY x to file=x[6] /copy
+     o=sysfixprivate(x[6])
+     o=sysfixpublic(x[7])
+    /if
+    # END Browser Cache Killer for text files /#
+
+
+
+
+
+
+
+
+
+ # Ok if we are making a snapshot we also add a comment to the webcast database /#
+ if count(tempPath[1,rows(tempPath)],'/webcast/')>0 then
+  qq=ci_extract(ci_textpath) qqq=chopchopright(replace(qq[1,1],'/webcast/',''),'/')
+  if isinteger(qqq) then
+   expand file="/webcast/currentwebcast.lib" /expand
+   expand file="/webcast/chatdata/database.lib" /expand
+   x[1]=idgen()
+   x[2]=now
+   x[3]=x[2]+':'+right('X00'+tagresults[7],2)
+        x[2]=left(now,10)
+   x[4]=usernum
+   x[5]=chatroom
+   x[6]='Moderator'
+   x[7]='Webcast'
+   x[8]=^<a ^+ci_parsehref(^href="^+sysstartlink+^/webcast/reader.html?filepath=^+postprep(tempPath[1,rows(tempPath)])+^" popup="900,600"^)+^>^+replace(qq[1,1],'/webcast/','/')+qq[2,1]+qq[4,1]+^ ^+addminutes(now,180)+':'+right('X00'+tagresults[7],2)+^</a>^
+   QDsetChat(x)
+   QDindexChat()
+  /if
+ /if
+
+   /if
+#  COPY ci_mytext to FILE=ci_textpath /COPY /#
+   smartsavetext(ci_textpath,ci_mytext)
+
+
+
+
+
+
+
+
+
+
+
+
+   if ci_mytext_less<>"" and ci_mytext_less<>"ERROR" and right(ci_textpath,5)='.less' then
+     temp_less=lf+^/* Compiled CSS, generated from "^+ci_textpath+^" */^+lf+lf+lf
+     COPY temp_less+ci_mytext_less to FILE=left(ci_textpath,length(ci_textpath)-5)+'.css' /COPY
+     temp_less='ERROR'
+     o=sysfixpublic(left(ci_textpath,length(ci_textpath)-5)+'.css')
+   /if
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if ci_mytext_min<>"" and ci_mytext_min<>"ERROR" and right(ci_textpath,3)='.js' then
+    if right(ci_textpath,9)='_devel.js' then
+     COPY ci_mytext_min to FILE=left(ci_textpath,length(ci_textpath)-9)+'.js' /COPY
+     o=sysfixpublic(left(ci_textpath,length(ci_textpath)-9)+'.js')
+    else
+     COPY ci_mytext_min to FILE=left(ci_textpath,length(ci_textpath)-3)+'_min.js' /COPY
+     o=sysfixpublic(left(ci_textpath,length(ci_textpath)-3)+'_min.js')
+    /if
+   /if
+   o=runSCRIPT(^$('savebutton').value='Save';^)
+   if temp01<>ci_mytext then # Change in text we update snapshot location /#
+    o=runSCRIPT(^$('ci_lastpath').value='^+encrypt(tempPath[1,rows(tempPath)],'encrypt'+usernum)+^';^)
+   /if
+
+
+
+
+
+   # PERL Scripts get execute permissions by default /#
+   message=''
+   if right(ci_textpath,3)=".pl" and ci_registered='TRUE' then
+    # Clever little trick to update this on the web site /#
+    cmd='chmod 755 '+ci_getpath(ci_textpath)
+    cmd2=aliascommand(cmd)
+    message=syscall('ImageServices Telnet',cmd2+' 2>&1') 
+    cmd='ls -al '+ci_getpath(ci_textpath)
+    cmd2=aliascommand(cmd)
+    message=left(syscall('ImageServices Telnet',cmd2+' 2>&1'),10)
+   elif right(ci_textpath,3)=".pl" then
+    message=message+'Changes not copied (unregistered)'
+   /if
+
+
+
+
+
+   if ismobile='false' then
+    o=writeHTML('message',^Last Save: ^+addminutes(now,180)+^:^+right('x00'+tagresults[7],2)+' '+message)
+   /if
+   o=runSCRIPT(^windowstatus('Last Save: ^+addminutes(now,180)+^:^+right('x00'+tagresults[7],2)+^');^)
+   ci_button="ERROR"
+   expand file=endOVERLAY() /expand
+  /if
+ else
+  temp=fileinfo(ci_textpath)
+# copy file=ci_lastpath to temp00 /copy /#
+# copy file=ci_textpath to temp01 /copy /#
+
+  temp00=smartloadtext(ci_lastpath)
+  temp01=smartloadtext(ci_textpath)
+
+  if temp00<>temp01 then
+   if temp00=ci_mytext then
+    o=runSCRIPT(^windowstatus('EXTERNAL CHANGES DETECTED, RELOADING.');^)
+    o=runSCRIPT(^window.location='^+ci_thispage+^';^)
+   else
+    o=runSCRIPT(^windowstatus('EXTERNAL CHANGES DETECTED!');^)
+   /if
+   ci_button="ERROR"
+   expand file=endOVERLAY() /expand
+  else
+   temp00='ERROR' temp01='ERROR'
+   ci_button="ERROR"
+   expand file=endOVERLAY() /expand
+  /if
+ /if
+>>
+<<overlay restore
+  if deletefile<>'ERROR' then
+   temp1=ci_rmfile(deletefile)
+  /if
+  deletefile="ERROR"
+  o=writeHTML('prefsmenu',^<a href="^+getlink('close')+^" AJAX><img src="/apps/imageservices/images/close.png" width="12" height="12" border="0"></a>^)
+  o=writeHTML('prefslist',restorelist(ci_textpath, ci_permission))
+  o=writeHTML('prefsbutton',^<b>Choose a snapshot.</b>^)
+  o=runSCRIPT(^$('prefsouter').style.display = "block";^)
+  o=runSCRIPT(^$('temptext').value=$('txtarea').value;^)
+  expand file=endOVERLAY() /expand
+>>
+<<overlay close
+  o=runSCRIPT(^$('prefsouter').style.display = "none";^)
+  expand file=endOVERLAY() /expand
+>>
+<<overlay restorefile
+  temp1=fileinfo(restorepath)
+  copy file=restorepath to temp /copy
+  o=runSCRIPT(^$('txtarea').value='^+JSONescape(temp)+^';^)
+  o=runSCRIPT(^windowstatus('Viewing Snapshot From: ^+temp1[3]+^');^)
+  expand file=endOVERLAY() /expand
+>>
+<<overlay cancelrestore
+  o=runSCRIPT(^$('prefsouter').style.display = "none";^)
+  o=runSCRIPT(^$('txtarea').value=$('temptext').value;^)
+  o=runSCRIPT(^$('temptext').value='';^)
+  o=runSCRIPT(^windowstatus('restore cancelled.');^)
+  expand file=endOVERLAY() /expand
+>>
+<<overlay preferences
+  o=writeHTML('prefsmenu',^<a href="^+getlink('close')+^" AJAX><img src="/apps/imageservices/images/close.png" width="12" height="12" border="0"></a>^)
+  o=writeHTML('prefslist',^<a href="^+getlink('restore')+^" AJAX>Open Snapshot Manager</a>^)
+  o=writeHTML('prefsbutton',^<b>Preferences</b> <a href="^+getlink('close')+^" AJAX>(x) Close</a>^)
+  o=runSCRIPT(^$('prefsouter').style.display = "block";^)
+  expand file=endOVERLAY() /expand
+>>
+<<overlay getclearjs
+ if domainname="clearjs.org" or isfile('/apps/clear/clear.js') then
+  goto page
+ else
+  thefile='/clearjs.bb'
+  temp=NETWEB('clearjs.org/home/clearjs.bb',50000000,600,'GET','','',thefile)
+  fpl=FILEPACKLIST(thefile)
+  fpli=getcoleq(fpl,1,'clear.js')
+  if fpli[1,1]="clear.js" then 
+   temp=fileunpack(thefile,'/apps/clear','')
+   message=temp
+  else
+   message="Unexpected ERROR, Try manual update."+ci_table(fpl)
+  /if
+ /if
+ goto getlink(page)
+>>

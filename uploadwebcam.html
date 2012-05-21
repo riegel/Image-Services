@@ -1,0 +1,62 @@
+<<
+ expand file="/system/clearimage/DLL.lib" /expand
+ test=ci_getmeta(ci_imagepath)
+ flashvars="commenttext="+postprep(test[8])+"&ci_imagepath="+encrypt(ci_imagepath,usernum)+"&ci_posturl="+postprep(getlink('/apps/imageservices/flashsnapshot/upload.html'))+"&ci_thisurl="+postprep(getlink(ci_uploadpage))
+>>
+<html>
+ <head>
+  <title>Upload Snapshot</title>
+  <style>
+   <!--
+    BODY                 {background: #888888; margin:40px; margin-top: 10px;}
+    BODY,TD              {font-size: 9pt; font-family: Verdana; font-weight: normal; color: #000000}
+    A                    {color: #2B4F9E; text-decoration: none}
+    A:Hover              {color: #2B4Fff; text-decoration: underline}
+    #formx_progress      {width: 0px; height: 8px; background-color: #0065e1; overflow: hidden;}
+    #formx_progresstext  {width: 478px; height: 15px; overflow: hidden; border-top: 1px solid #aaaaaa;}
+    -->
+  </style>
+  <script src="<<syspublicurl>><<dirname(page)>>flashsnapshot/AC_OETags.js" language="javascript"></script>
+ </head>
+ <body>
+  <script language="JavaScript" type="text/javascript">
+   AC_FL_RunContent(
+    "src", "<<syspublicurl>><<dirname(page)>>flashsnapshot/snapshot.swf",
+    "width", "480",
+    "height", "300",
+    "align", "middle",
+    "id", "camcomment",
+    "quality", "high",
+    "bgcolor", "#869ca7",
+    "name", "camcomment",
+    "flashvars","<<flashvars>>",
+    "allowScriptAccess","sameDomain",
+    "type", "application/x-shockwave-flash",
+    "pluginspage", "http://www.adobe.com/go/getflashplayer"
+    );
+  </script>
+  <noscript>
+   <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"
+    id="camcomment" width="480" height="300"
+    codebase="http://fpdownload.macromedia.com/get/flashplayer/current/swflash.cab">
+    <param name="movie" value="<<syspublicurl>><<dirname(page)>>flashsnapshot/snapshot.swf" />
+    <param name="quality" value="high" />
+    <param name="bgcolor" value="#869ca7" />
+    <param name="flashvars" value="<<flashvars>>" />
+    <param name="allowScriptAccess" value="sameDomain" />
+    <embed src="<<syspublicurl>><<dirname(page)>>flashsnapshot/snapshot.swf" quality="high" bgcolor="#869ca7"
+     width="480" height="300" name="camcomment" align="middle"
+     play="true"
+     loop="false"
+     quality="high"
+     flashvars="<<flashvars>>"
+     allowScriptAccess="sameDomain"
+     type="application/x-shockwave-flash"
+     pluginspage="http://www.adobe.com/go/getflashplayer">
+    </embed>
+   </object>
+  </noscript>
+  <br>
+  <a href="<<ci_uploadpage>>">cancel</a>
+ </body>
+</html>

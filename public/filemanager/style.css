@@ -1,0 +1,68 @@
+A                         {color: #000000; text-decoration: none}
+A:hover                   {text-decoration: underline;}
+
+.tb                       {padding-left: 15px; padding-right: 15px; padding-top: 5px; padding-bottom: 3px;}
+
+
+.mir      {background-image: url('../images/mirror.gif'); background-repeat: no-repeat; background-position:  right; }
+.mir.sel  {background-image: url('../images/mirrorI.gif'); background-repeat: no-repeat; background-position:  right; }
+.pub      {background-image: url('images/eye.gif'); background-repeat: no-repeat; background-position:  right; }
+.pub.sel  {background-image: url('images/eye.gif'); background-repeat: no-repeat; background-position:  right; }
+.pri      {color: #777777;}
+.pri.sel  {color: #dddddd;}
+
+
+.bad      {color: #999999; background-image: url('images/badfile.png'); background-repeat: no-repeat; background-position: right center;}
+.bad.sel  {color: #284473; background-image: url('images/badfile.png'); background-repeat: no-repeat; background-position: right center;}
+
+.sel                      {cursor:pointer; cursor:hand; padding-top: 3px; padding-bottom:3px; padding-left: 10px; padding-right: 10px; margin: 0; color: white; background: #3875D7;}
+
+.nor                      {cursor:pointer; cursor:hand; padding-top: 3px; padding-bottom:3px; padding-left: 10px; padding-right: 10px; margin: 0;}
+
+.anchor                    {color: #3875D7;}
+
+
+body, p, table, td        {font: 12px Verdana, Arial, Helvetica, sans-serif; -moz-user-select:none; selection:none; margin: 0; padding: 0;}
+
+.big                      {font-size: 18px;}
+.med                      {font-size: 12px;}
+.small                    {font-size: 11px;}
+.tiny                     {font-size: 10px;}
+.red                      {color: red;}
+.msg                      {padding: 5px;}
+
+.dimmed                   {color: #cccccc;}
+.ready                    {color: #000000;}
+
+
+
+
+
+
+.tabbed                   {background-repeat: repeat-x; white-space: nowrap; height: 20px; color: #555555;}
+
+.tabbed td a:link,
+.tabbed td a:visited      {padding: 1px; padding-left: 5px; padding-right: 5px; display: block; color: #444444; text-decoration: none; background-repeat: repeat-x;}
+
+.tabbed td a:hover,
+.tabbed td a:active       {color: #0096ff;}
+
+.tabbed td.hi a:link,
+.tabbed td.hi a:visited   {font-weight: bold;}
+
+.actionthis    {padding: 0; margin: 0; border: none;}
+.actionthis li {padding: 3px; margin: 2px; border: 1px solid #465A96;text-align: left; list-style: none; width: 140px;}
+.actionthis li a {text-decoration: none; display: block; font-size: 11px;}
+
+.actionthis li:hover {background-color: #788CC8;}
+
+.ice                      {background-repeat: repeat-x; white-space: nowrap; height: 25px;}
+.ice td a:link,
+.ice td a:visited         {padding-top: 6px; padding-bottom: 7px; padding-left: 6px; padding-right: 7px; display: block; color: #000; text-decoration: none; background-repeat: repeat-x;}
+.ice                      {background-image: url(images/ice.gif);}
+.ice td a:link,
+.ice td a:visited         {background-image: url(images/ice.gif);}
+.ice td a:hover,
+.ice td a:active          {background-image: url(images/icehover.gif);}
+.ice td.hi a:link,
+.ice td.hi a:visited      {background-image: url(images/icehi.gif);}

@@ -1,0 +1,137 @@
+<<
+if left(destination,length(fm_chroot))<>fm_chroot then destination=fm_chroot /if
+
+ HTMLOS.APPINPUT='ERROR'
+ if fm_cmd="delete" or fm_cmd="copy" or fm_cmd="paste" then fm_cmd="" fm_command="" /if
+ if fm_message="ERROR" then fm_message="" /if
+ if fm_searchtext="SEARCH" then fm_searchtext="" /if
+ if left(fm_searchtext,3)='cd ' then destination=right(fm_searchtext,length(fm_searchtext)-3) /if
+ # Ahh need something new like a file or a folder /#
+ if fm_cmd='folder|' or fm_cmd='file|' then fm_new=fm_cmd fm_cmd='' /if
+ if count(fm_new,"|")>0 then
+  fm_new=split(fm_new,"|")
+  fm_new=fm_new[1,1]
+  fm_searchtext=""
+  fm_list=""
+ /if
+ # This is if I need to also send fm_cmd along with a destination (Like Open Folder) /#
+ if count(destination,"|")>0 then
+  destination=split(destination,"|")
+  fm_cmd=destination[1,2]
+  destination=destination[1,1]
+  fm_list=""
+ /if
+ if right(destination,1)='/' then else destination=destination+'/' /if
+ destination=replaceall(destination,'/./','/')
+ destination=replaceall(destination,'//','/')
+ if right(destination,1)='/' then destination=left(destination,length(destination)-1) /if
+ if right(destination,3)='/..' then destination=reverse(chopleft(replace(reverse(destination),'/',''),'/')) /if
+ if right(destination,2)='..' then destination=reverse(chopleft(reverse(destination),'/')) /if
+ destination=replaceall("/"+replaceall(destination,"//","/")+"/","//","/")
+ if isdir(destination)="FALSE" then
+  destination=left(destination,length(destination)-locate(reverse(destination),"/"))
+  if destination="" or destination="ERROR" then
+   destination="/"
+  /if
+ /if
+ if isdir(destination) then fm_bbfile='' else fm_bbfile='bb' /if
+# '/apps/imageservices/filemanager/images/spinneroff.png' '/apps/imageservices//security/photos/riegel' /#
+if spinneroff='ERROR' then
+ if clear_user='ADMIN' or not(isfile('/apps/imageservices//security/photos/'+clear_user)) then
+  spinneroff='/apps/imageservices/filemanager/images/spinneroff.png'
+ else
+  temp=ci_img('/apps/imageservices/security/photos/'+clear_user,24,24,'FALSE')
+  spinneroff=fileprep(ci_tagresults[10,1])
+ /if
+/if
+
+sysmd('/apps/imageservices/filemanager/ignore/')
+copy file='/apps/imageservices/filemanager/ignore/'+hash(destination)+'.txt' to fm_ignorenames /copy
+>>
+<html>
+ <head>
+  <<fm_style>>
+  <<
+     display '<script language="javascript" type="text/javascript" src="'+syspublicurl+'/apps/imageservices/filemanager/filemanager.js?id=111"></script>' /display
+  >>
+  <script language="javascript" type="text/javascript">
+   <!--
+     var loadpopup='<<getlink('loadpopup.html')>>';
+     var fm_chroot='<<fm_chroot>>';
+     var spinneroff='<<spinneroff>>';
+
+     function browse(){
+      if(top.window['details'].document.getElementById('submit')){
+       top.window['details'].document.getElementById('submit').value='Search <<destination>>';
+      }
+      if(top.window['details'].document.getElementById('ignore')){
+       top.window['details'].document.getElementById('ignore').value='<<fm_ignorenames>>';
+      }
+      if(top.window['details'].document.getElementById('search')){
+       if ('<<fm_searchtext>>' != ''){
+        top.window['details'].document.getElementById('search').value='<<fm_searchtext>>';
+       } else {
+        top.window['path'].document.getElementById('search').value='SEARCH'
+        top.window['details'].document.location.href='<<getlink('icons.html')>>';
+       }
+      }
+     }
+
+   //-->
+  </script>
+ </head>
+<body bgcolor="f1f1f1" onselectstart="return false">
+ <<listfiles(destination)>>
+ <form action="details.html" target="details" name="browseform" accept-charset="utf-8">
+  <input type="hidden" name="destination">
+  <input type="hidden" name="fm_list">
+  <input type="hidden" name="fm_cmd">
+  <input type="hidden" name="fm_url">
+ </form>
+ <form action="<<page>>" name="browseformhere" accept-charset="utf-8">
+  <input type="hidden" name="destination">
+  <input type="hidden" name="fm_list">
+  <input type="hidden" name="fm_cmd">
+  <input type="hidden" name="fm_url">
+  <input type="hidden" name="fm_bbfile">
+ </form>
+ <<fm_new="ERROR" temp="ERROR" fm_message="ERROR" fm_newname="ERROR" fm_cmd="ERROR">>
+</body>
+</html>
+<<overlay new
+fm_message=""
+if fm_newname<>"" and fm_newname<>"ERROR" then
+ fm_newname=replaceall(fm_newname," ","%20")
+ fm_message=filenameverify(fm_new)
+ if isfile(destination+"/"+fm_newname) then fm_message="A File already exists with that name." /if
+ if isdir(destination+"/"+fm_newname) then fm_message="A Folder already exists with that name." /if
+ if fm_message="" then
+  if fm_new="folder" then
+   temp=filenewdir(destination+"/"+fm_newname)
+   fm_new="ERROR"
+   fm_message="Folder Created<br>"+destination+"/"+fm_newname
+   fm_list=fm_list+"|"+fm_newname+"/"
+   fm_cmd="details"
+  else
+   if right(fm_newname,3)='.db' then
+    fm_new="DONE"
+    fm_message="Use dBconsole to create databases<br><script>top.frames['details'].forms[0].element[0].value='Terry';</script>"
+    fm_cmd="goto"
+    fm_url=getlink('/apps/dbcons/bin/dbcons.html')
+   else
+    temp=""
+    copy temp to file=destination+"/"+fm_newname /copy
+    fm_new="ERROR"
+    fm_message="File Created<br>"+destination+"/"+fm_newname
+    fm_list=fm_list+"|"+fm_newname
+    fm_cmd="goto"
+    fm_url=getlink('details.html')
+   /if
+  /if
+ /if
+/if
+fm_newname="ERROR"
+if fm_message="ERROR" then fm_message="" /if
+if fm_message<>"" then fm_message='<tr><td valign="center" align="center" class="nor">'+fm_message+"</td></tr>" /if
+goto page
+>>

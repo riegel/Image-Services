@@ -1,0 +1,139 @@
+
+
+function liveserverclock(st) locals t,temp,q,m,d,y,h,mi,s do
+ # Live Server Clock Code /#
+ t=addminutes(now,180)
+ s=right(^X0^+tagresults[7,1],2)
+ m=getmonth(t,'long')
+ dy=right(^X0^+getday(t,'short'),2)
+ y=getyear(t,'long')
+ h=right(^X0^+gethour(t),2)
+ mi=right(^X0^+getminute(t),2)
+ q=^timestring^
+ d=h+^:^+mi+^:^+s
+ t=m+^ ^+dy+^, ^+y+^ ^+h+^:^+mi+^:^+s
+ temp=^
+ <script type="text/javascript">
+ var currenttime = '^+t+^'
+ var montharray=new Array("January","February","March","April","May","June","July","August","September","October","November","December")
+ var serverdate=new Date(currenttime)
+ function padlength(what){
+ var output=(what.toString().length==1)? "0"+what : what
+ return output
+ }
+ function displaytime(){
+ serverdate.setSeconds(serverdate.getSeconds()+1)
+ var datestring=montharray[serverdate.getMonth()]+" "+padlength(serverdate.getDate())+", "
+ var timestring=padlength(serverdate.getHours())+":"+padlength(serverdate.getMinutes())+":"+padlength(serverdate.getSeconds())
+ document.getElementById("servertime").innerHTML=^+q+^
+ }
+ setInterval("displaytime()", 1000);
+ </script><span ^+st+^ id="servertime">^+d+^</span>^
+ return temp /return
+/function
+
+
+
+function restorelist(path, permission) locals temp,restorelist,temp1,tempbg,x,dellink do
+  temp=newbackup(path)
+  temp=reversesortcol(temp,1)
+  restorelist='<table width="100%" cellspacing="0" cellpadding="3">'
+  temp1=fileinfo(ci_textpath)
+  tempbg=' bgcolor="#bbbbbb"'
+  restorelist=restorelist+'<tr><td'+tempbg+'></td><td'+tempbg+'><b>File Name</b></td><td'+tempbg+'><b>Date</b></td><td'+tempbg+'><b>Size</b></td></tr>'
+  tempbg=''
+  restorelist=restorelist+'<tr><td'+tempbg+'></td><td'+tempbg+'><a href="'+getlink('restorefile','restorepath',ci_textpath)+'" AJAX>'+replace(reverse(chopright(reverse(ci_textpath),'/')),'/','')+'</a></td><td'+tempbg+'>'+left(temp1[3],14)+'</td><td'+tempbg+'>'+temp1[2]+'</td></tr>'
+  for name=temp rownum=x do
+   if temp[2,x]='EXISTING' then
+    if tempbg='' then tempbg=' bgcolor="#dddddd"' else tempbg='' /if
+    if permission<>'READONLY' then
+     dellink='<a href="'+getlink('restore','deletefile',temp[1,x])+'" AJAX><img src="/apps/imageservices/images/trash.gif" width="12" height="12" border="0"></a>'
+    else
+     dellink='&nbsp;'
+    /if
+    restorelist=restorelist+'
+    <tr>
+     <td'+tempbg+'>'+dellink+'</td>
+     <td'+tempbg+'><a href="'+getlink('restorefile','restorepath',temp[1,x])+'" AJAX>'+replace(reverse(chopright(reverse(temp[1,x]),'/')),'/','')+'</a></td>
+     <td'+tempbg+'>'+left(temp[4,x],14)+'</td><td'+tempbg+'>'+temp[3,x]+'</td>
+    </tr>'
+   /if
+  /for
+  restorelist=restorelist+'</table>'
+  return restorelist /return
+/function
+
+
+
+function timing(evnt) locals x do
+  if evnt='ERROR' or evnt='' then return ci_table(timingglobal) /return /if
+  if timingglobal='ERROR' or timingglobal='' then
+   timingglobal[1,1]=systime timingglobal[2,1]=0 timingglobal[3,1]=evnt return '' /return
+  /if
+  x[1]=systime x[2]=x[1]-timingglobal[1,rows(timingglobal)] x[3]=evnt
+  timingglobal=append(timingglobal,x)
+  return '' /return
+/function
+
+
+
+function newbackup(path) locals tab,temp,x,y,z,bak,t,d,r do
+  tab=ci_extract(path)
+  temp=filelist(tab[1]+tab[6])
+  temp=sortcol(temp,1)
+  bak=0
+  z='ERROR'
+  d='ERROR'
+
+  if count(path,'/webcast/')=0 then
+   for name=temp rowname=x do
+    if left(x[1],length(tab[2]+tab[4]))=tab[2]+tab[4] then
+     if middle(x[3],10,11)=d and d<>gethour(now) and d<>gethour(now)-1 then
+      r=sysrm(tab[1]+tab[6]+x[1])
+     else
+      d=middle(x[3],10,11)
+     /if
+    /if
+   /for
+  /if
+
+  for name=temp rowname=x do
+   if left(x[1],length(tab[2]+tab[4]))=tab[2]+tab[4] then
+    t='ERROR'
+    t[1,1]=tab[1]+tab[6]+x[1]
+    t[2,1]='EXISTING'
+    t[3,1]=x[2]
+    if middle(x[3],10,11)=d and d<>gethour(now) and d<>gethour(now)-1 then
+     t[4,1]='DELETE'
+    else
+     d=middle(x[3],10,11)
+     t[4,1]=x[3]
+    /if
+    t[5,1]=x[4]
+    t[6,1]=x[5]
+    if t[4,1]<>'DELETE' then
+     z=appends(z,t)
+    /if
+    y=middle(x[1],length(tab[2]+tab[4])+2,length(x[1])-3)
+    if y>bak then bak=y /if
+   /if
+  /for
+  t='ERROR'
+  t[1,1]=tab[1]+tab[6]+tab[2]+tab[4]+'.'+right('X00000'+bak,5)+'BAK'
+  t[2,1]='LAST'
+  z=appends(z,t)
+  bak=bak+1
+  t='ERROR'
+  t[1,1]=tab[1]+tab[6]+tab[2]+tab[4]+'.'+right('X00000'+bak,5)+'BAK'
+  t[2,1]='NEW'
+  z=appends(z,t)
+  return z /return
+/function
+
+
+
+function ci_title(path) do
+ path=replaceall(replace(path,fm_chroot,"/"),"//","/")
+ if ci_srch="SIMPLE" then path=replace(replace(reverse(chopright(reverse(path),"/")),"/",""),".txt","") /if
+ return path /return
+/function

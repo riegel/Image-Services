@@ -1,0 +1,5 @@
+"app_icon_cigreen.gif"
+"filemanager.html"
+"File Manager"
+"/filemanager"
+"Main Menu"

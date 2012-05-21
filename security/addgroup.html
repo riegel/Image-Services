@@ -1,0 +1,50 @@
+<html>
+<head>
+ <title>Add A Group</title>
+ <meta http-equiv="pragma" content="no-cache">
+ <meta http-equiv="cache-control" content="no-cache">
+ <style>
+ <!--
+ BODY    {background: #888888;}
+ BODY,TD {font-size: 9pt; font-family: Verdana; font-weight: normal; color: #000000}
+ A       {color: #2B4F9E; text-decoration: none}
+ A:Hover {color: #2B4Fff; text-decoration: underline}
+ -->
+ </style>
+ </head>
+<body>
+<center>
+<table>
+<tr><td colspan="2">
+<h2>Security Clearance Manager</h2>
+<h4>Add Group</h4>
+</td></tr>
+ <form action="adduser" method="post" accept-charset="utf-8">
+<<
+ display '
+<tr><td bgcolor="#eeeeee">CLEAR_GROUPNAME</td><td bgcolor="#eeeeee"><input type="text" name="CLEAR_GROUPNAME" size="30"></td></tr>
+<tr><td bgcolor="#eeeeee">CLEAR_GROUPDESC</td><td bgcolor="#eeeeee"><textarea name="CLEAR_GROUPDESC" rows="3" cols="30"></textarea></td></tr>
+' /display
+
+
+
+CLEAR_GROUPNAME=''
+CLEAR_GROUPDESC=''
+CLEAR_USER='ROOT'
+
+>>
+ <tr><td colspan="2" bgcolor="#aaaaaa"><input type="submit" name="mybutton" value="Add"> | <input type="submit" name="mybutton" value="Cancel"></td></tr>
+ </form>
+</table>
+</center>
+</body>
+</html>
+<<overlay adduser
+if mybutton="Add" then
+ clear_groupname=aestivafilename(clear_groupname)
+ temp=dbadd(ci_approot+'/security/clear_groups')
+ record=tagresults[2,1]
+ goto "editgroup.html"
+/if
+goto "groups.html"
+>>

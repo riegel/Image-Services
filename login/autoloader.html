@@ -1,0 +1,64 @@
+<html>
+ <head>
+  <title>Persistent Login Page</title>
+  <script>
+   a=0;
+   aa=0;
+   function watch(){
+    b=window.setInterval(isLogin,500);
+   }
+   function isLogin(){
+    if (a==0){
+     // do nothing on first invocation
+    } else {
+
+     oLogin = parent.content.document;
+     if (a>10) {
+      clearInterval(b);
+     } else {
+      if (oLogin.forms[0] && oLogin.forms[0].name == "desktop_login"){
+       clearInterval(b);
+       b=window.setInterval(isError,200);
+       oLogin.forms[0].submit();
+       return false;
+      }
+     }
+    }
+    a=a+1;
+   }
+
+
+   function isError(){
+    if (aa==0){
+     // do nothing on first invocation
+    } else {
+
+     oLogin = parent.content.document;
+     if (aa>10) {
+      clearInterval(b);
+     } else {
+      if (oLogin.body.innerHTML.search('Login failed.')>0){
+       parent.location.href='<<sysstartlink+'/login.html'>>?Login%20Failure';
+      }
+     }
+    }
+    aa=aa+1;
+   }
+
+
+
+  </script>
+ </head>
+ <body onload="watch();" style="margin: 0; padding: 0; border: none; background-color: #777777; font-family: sans-serif; font-size: 10pt; color: white;">
+  <<
+    if htmlos_login_permanent=1 then
+     display ^<a href="gologout" target="_parent" style="text-decoration: none; color: white;">&nbsp;Welcome&nbsp;^+clear_name+^,&nbsp;If&nbsp;this&nbsp;is&nbsp;a&nbsp;public&nbsp;computer&nbsp;click&nbsp;to&nbsp;disable&nbsp;autologon.</a>^ /display
+    else
+     display ^<a href="gologout" target="_parent" style="text-decoration: none; color: white;">&nbsp;Welcome&nbsp;^+clear_name+^</a>^ /display
+    /if
+  >>
+</html>
+<<overlay gologout
+ temp=ci_cookiewrite('PERSIST','ERROR',adddays(now,365))
+ goto '/apps/imageservices/login/logout.html'
+>>
