@@ -222,6 +222,11 @@ A.menu:Link, A.menu:Visited, A.menu:Active, A.menu:Hover {text-decoration: none}
 <<overlay do_shell
 if cmd='[install upload.cgi]' then
 
+
+
+
+
+
  shell=''
  cmd1=cmd
  cmdhist=cmdhist+lf+cmd
@@ -248,7 +253,7 @@ if cmd='[install upload.cgi]' then
 
  cmd=cmd1
 
-elif cmd='loadgit' then
+elif cmd='loadgit' or cmd='gitload' then
 
  temp=sysls('/apps/bundlebee/bin/specs/')
  temp3='ERROR'
@@ -260,10 +265,15 @@ elif cmd='loadgit' then
     temp3='git add'
     for name=temp1 rowname=y do
      temp4=fileinfo(y[3])
-     if temp4[5,1]='PUBLIC' then
-      temp3=temp3+' public/'+replace(y[3],destination,'')
+     if y[2]='DIR' then
+       temp3=temp3+' '       +replace(y[3],destination,'')
+       temp3=temp3+' public/'+replace(y[3],destination,'')
      else
-      temp3=temp3+' '+replace(y[3],destination,'')
+      if temp4[5,1]='PUBLIC' then
+       temp3=temp3+' public/'+replace(y[3],destination,'')
+      else
+       temp3=temp3+' '       +replace(y[3],destination,'')
+      /if
      /if
     /for
    /if
